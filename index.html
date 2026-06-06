@@ -751,6 +751,65 @@ main {
 }
 .fixture-delete-btn:hover { color: var(--red); }
 
+/* ── Today's games widget ────────────────────────────────────────────────── */
+.todays-games {
+  background: linear-gradient(135deg, #1a2010 0%, #1a1500 100%);
+  border: 1px solid rgba(34,197,94,0.25);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 28px;
+}
+
+.todays-games-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  color: var(--green);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.todays-game-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(34,197,94,0.15);
+  font-size: 13px;
+}
+
+.todays-game-row:last-child { border-bottom: none; }
+
+.todays-game-match {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.todays-game-team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 120px;
+}
+
+.todays-game-time {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+  min-width: 60px;
+}
+
+.todays-games-empty {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 20px;
+}
+
 .settings-row {
   display: flex;
   align-items: center;
@@ -846,6 +905,8 @@ main {
       </div>
     </div>
   </div>
+
+  <div id="todays-games-widget"></div>
 
   <div id="leaderboard-content">
     <div class="loading-spinner">Loading leaderboard…</div>
@@ -995,12 +1056,26 @@ main {
       </div>
     </div>
 
-    <!-- Score entry — Group Stage -->
-    <div class="card" style="margin-bottom:20px">
+    <!-- Score entry — View tabs -->
+    <div style="margin-bottom:16px; display:flex; gap:8px; border-bottom:1px solid var(--border); padding-bottom:12px">
+      <button class="tab-btn active" id="tab-group-view" onclick="switchScoreView('group')">By Group</button>
+      <button class="tab-btn" id="tab-date-view" onclick="switchScoreView('date')">By Date</button>
+    </div>
+
+    <!-- Group view -->
+    <div id="score-view-group" class="card" style="margin-bottom:20px">
       <div class="card-title">Group Stage Results</div>
       <p style="font-size:12px; color:var(--muted); margin-bottom:16px">Enter scores for each match. Saves automatically when you click Save.</p>
       <div class="round-tabs" id="group-tabs"></div>
       <div id="group-fixtures"></div>
+    </div>
+
+    <!-- Date view -->
+    <div id="score-view-date" class="card" style="margin-bottom:20px; display:none">
+      <div class="card-title">Group Stage Results (by Date)</div>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:16px">Select a date to enter results for that day.</p>
+      <div class="round-tabs" id="date-tabs"></div>
+      <div id="date-fixtures"></div>
     </div>
 
     <!-- Score entry — Knockout -->
@@ -1162,7 +1237,29 @@ for (const [pot, data] of Object.entries(POTS)) {
 
 const KNOCKOUT_BONUS = { r32: 3, qf: 5, sf: 8, final_runner: 12, final_winner: 20 };
 
-// All 72 group stage fixtures
+// All 72 group stage fixtures with dates
+const FIXTURE_DATES = {
+  '2026-06-11': [['Mexico','South Africa']],
+  '2026-06-12': [['South Korea','Czech Republic'],['Canada','Bosnia & Herz.']],
+  '2026-06-13': [['USA','Paraguay'],['Qatar','Switzerland'],['Brazil','Morocco']],
+  '2026-06-14': [['Haiti','Scotland'],['Australia','Turkey'],['Germany','Curacao'],['Netherlands','Japan']],
+  '2026-06-15': [['Ivory Coast','Ecuador'],['Sweden','Tunisia'],['Spain','Cape Verde'],['Belgium','Egypt'],['Saudi Arabia','Uruguay']],
+  '2026-06-16': [['Iran','New Zealand'],['France','Senegal'],['Iraq','Norway']],
+  '2026-06-17': [['Argentina','Algeria'],['Austria','Jordan'],['Portugal','DR Congo'],['England','Croatia']],
+  '2026-06-18': [['Ghana','Panama'],['Uzbekistan','Colombia'],['Czech Republic','South Africa'],['Switzerland','Bosnia & Herz.'],['Canada','Qatar']],
+  '2026-06-19': [['Mexico','South Korea'],['USA','Australia'],['Scotland','Morocco']],
+  '2026-06-20': [['Brazil','Haiti'],['Turkey','Paraguay'],['Netherlands','Sweden'],['Germany','Ivory Coast']],
+  '2026-06-21': [['Ecuador','Curacao'],['Tunisia','Japan'],['Spain','Saudi Arabia'],['Belgium','Iran'],['Uruguay','Cape Verde']],
+  '2026-06-22': [['New Zealand','Egypt'],['Argentina','Austria'],['France','Iraq']],
+  '2026-06-23': [['Norway','Senegal'],['Jordan','Algeria'],['Portugal','Uzbekistan'],['England','Ghana']],
+  '2026-06-24': [['Panama','Croatia'],['Colombia','DR Congo'],['Switzerland','Canada'],['Bosnia & Herz.','Qatar'],['Morocco','Haiti'],['Scotland','Brazil']],
+  '2026-06-25': [['South Africa','South Korea'],['Czech Republic','Mexico'],['Curacao','Ivory Coast'],['Ecuador','Germany']],
+  '2026-06-26': [['Tunisia','Netherlands'],['Japan','Sweden'],['Turkey','USA'],['Paraguay','Australia'],['Norway','France'],['Senegal','Iraq']],
+  '2026-06-27': [['Cape Verde','Saudi Arabia'],['Uruguay','Spain'],['New Zealand','Belgium'],['Egypt','Iran'],['Panama','England'],['Croatia','Ghana']],
+  '2026-06-28': [['Colombia','Portugal'],['DR Congo','Uzbekistan'],['Algeria','Austria'],['Jordan','Argentina']],
+};
+
+// All 72 group stage fixtures by group
 const GROUP_FIXTURES = {
   A: {
     teams: ['Mexico','South Korea','Czech Republic','South Africa'],
@@ -1299,6 +1396,8 @@ const GROUP_FIXTURES = {
 };
 
 let activeGroupTab = 'A';
+let activeScoreView = 'group';
+let activeDateTab = '2026-06-11';
 const ROUND_ORDER = ['group','r32','qf','sf','final'];
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -1376,7 +1475,7 @@ function showView(name) {
 // ════════════════════════════════════════════════════════════════════════════
 function renderLeaderboard() {
   const entries = Object.values(state.entries);
-  const fee = parseFloat(state.settings.entryFee) || 5;
+  const fee = parseFloat(state.settings.entryFee) || 2;
   const pot = entries.length * fee;
 
   document.getElementById('prize-total').textContent = '£' + pot.toFixed(0);
@@ -1387,6 +1486,8 @@ function renderLeaderboard() {
   document.getElementById('prize-1st').textContent = '£' + (pot * 0.5).toFixed(0);
   document.getElementById('prize-2nd').textContent = '£' + (pot * 0.3).toFixed(0);
   document.getElementById('prize-3rd').textContent = '£' + (pot * 0.2).toFixed(0);
+
+  renderTodaysGames();
 
   if (!entries.length) {
     document.getElementById('leaderboard-content').innerHTML = `
@@ -1802,13 +1903,133 @@ async function saveFixture(team1, team2, fid) {
 
   renderGroupTabs();
   renderGroupFixtures();
+  renderDateTabs();
+  renderDateFixtures();
+  renderTodaysGames();
   toast(`${team1} ${s1}–${s2} ${team2} saved ✓`, 'success');
+}
+
+function switchScoreView(view) {
+  activeScoreView = view;
+  document.getElementById('score-view-group').style.display = view === 'group' ? 'block' : 'none';
+  document.getElementById('score-view-date').style.display = view === 'date' ? 'block' : 'none';
+  document.getElementById('tab-group-view').classList.toggle('active', view === 'group');
+  document.getElementById('tab-date-view').classList.toggle('active', view === 'date');
+  if (view === 'date') { renderDateTabs(); renderDateFixtures(); }
+}
+
+function renderDateTabs() {
+  const dates = Object.keys(FIXTURE_DATES).sort();
+  const tabs = document.getElementById('date-tabs');
+  tabs.innerHTML = dates.map(d => {
+    const matches = FIXTURE_DATES[d];
+    const done = matches.filter(([t1,t2]) => state.matches[fixtureId(t1,t2)]).length;
+    const total = matches.length;
+    const dateObj = new Date(d);
+    const shortDate = dateObj.toLocaleDateString('en-GB', {month:'short', day:'numeric'});
+    return `<button class="round-tab ${d===activeDateTab?'active':''}" onclick="switchDateTab('${d}')">
+      ${shortDate} ${done === total && done > 0 ? '✓' : done > 0 ? `(${done}/${total})` : ''}
+    </button>`;
+  }).join('');
+}
+
+function switchDateTab(date) {
+  activeDateTab = date;
+  renderDateTabs();
+  renderDateFixtures();
+}
+
+function renderDateFixtures() {
+  const fixtures = FIXTURE_DATES[activeDateTab] || [];
+  const container = document.getElementById('date-fixtures');
+
+  if (!fixtures.length) {
+    container.innerHTML = '<p style="color:var(--muted);font-size:13px">No matches on this date.</p>';
+    return;
+  }
+
+  let html = '';
+  fixtures.forEach(([t1, t2], i) => {
+    const fid = fixtureId(t1, t2);
+    const saved = state.matches[fid];
+    const f1 = POTS[TEAM_POT[t1]]?.teams.find(t=>t.name===t1);
+    const f2 = POTS[TEAM_POT[t2]]?.teams.find(t=>t.name===t2);
+
+    if (saved) {
+      html += `<div class="fixture-row">
+        <div class="fixture-team">${f1?.flag||''} ${t1}</div>
+        <div class="fixture-score">
+          <input type="number" class="score-input" id="s1_${fid}" value="${saved.score1}" min="0" max="30">
+          <span class="vs-label">–</span>
+          <input type="number" class="score-input" id="s2_${fid}" value="${saved.score2}" min="0" max="30">
+        </div>
+        <div class="fixture-team right">${t2} ${f2?.flag||''}</div>
+        <span class="fixture-done">✓ Saved</span>
+        <button class="fixture-save-btn" onclick="saveFixture('${t1}','${t2}','${fid}')">Update</button>
+        <button class="fixture-delete-btn" onclick="deleteMatch('${fid}')" title="Delete">✕</button>
+      </div>`;
+    } else {
+      html += `<div class="fixture-row">
+        <div class="fixture-team">${f1?.flag||''} ${t1}</div>
+        <div class="fixture-score">
+          <input type="number" class="score-input" id="s1_${fid}" placeholder="0" min="0" max="30">
+          <span class="vs-label">–</span>
+          <input type="number" class="score-input" id="s2_${fid}" placeholder="0" min="0" max="30">
+        </div>
+        <div class="fixture-team right">${t2} ${f2?.flag||''}</div>
+        <button class="fixture-save-btn" onclick="saveFixture('${t1}','${t2}','${fid}')">Save</button>
+      </div>`;
+    }
+  });
+
+  container.innerHTML = html;
+}
+
+function renderTodaysGames() {
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date();
+  // Use tournament start date for demo if before tournament
+  const tournamentStart = new Date('2026-06-11');
+  const checkDate = today >= tournamentStart ? today : tournamentStart;
+
+  const dateStr = checkDate.toISOString().split('T')[0];
+  const todaysMatches = FIXTURE_DATES[dateStr] || [];
+
+  const widget = document.getElementById('todays-games-widget');
+
+  if (!todaysMatches.length) {
+    widget.innerHTML = '';
+    return;
+  }
+
+  let html = `<div class="todays-games">
+    <div class="todays-games-title">⚽ Today's Matches</div>`;
+
+  for (const [t1, t2] of todaysMatches) {
+    const f1 = POTS[TEAM_POT[t1]]?.teams.find(t=>t.name===t1);
+    const f2 = POTS[TEAM_POT[t2]]?.teams.find(t=>t.name===t2);
+    const saved = state.matches[fixtureId(t1, t2)];
+
+    html += `<div class="todays-game-row">
+      <div class="todays-game-match">
+        <div class="todays-game-team">${f1?.flag||''} ${t1}</div>
+        <span style="color:var(--muted)">vs</span>
+        <div class="todays-game-team">${f2?.flag||''} ${t2}</div>
+      </div>
+      ${saved ? `<div class="todays-game-score" style="font-weight:700;color:var(--gold);font-family:'Bebas Neue';font-size:16px">${saved.score1}–${saved.score2}</div>` : '<div style="color:var(--muted);font-size:12px">Not started</div>'}
+    </div>`;
+  }
+
+  html += '</div>';
+  widget.innerHTML = html;
 }
 
 function renderAdminPanel() {
   document.getElementById('admin-fee').value = state.settings.entryFee || 2;
   renderGroupTabs();
   renderGroupFixtures();
+  renderDateTabs();
+  renderDateFixtures();
   renderMatchLog();
   renderAdminEntries();
 }
@@ -1827,8 +2048,8 @@ function initFirebaseListeners() {
 
   dbRef('matches').on('value', snap => {
     state.matches = snap.val() || {};
-    if (adminUnlocked) { renderGroupTabs(); renderGroupFixtures(); renderMatchLog(); }
-    if (document.getElementById('view-leaderboard').classList.contains('active')) renderLeaderboard();
+    if (adminUnlocked) { renderGroupTabs(); renderGroupFixtures(); renderDateTabs(); renderDateFixtures(); renderMatchLog(); }
+    if (document.getElementById('view-leaderboard').classList.contains('active')) { renderLeaderboard(); renderTodaysGames(); }
   });
 
   dbRef('teamRounds').on('value', snap => {
