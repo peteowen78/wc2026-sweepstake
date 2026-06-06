@@ -1793,7 +1793,7 @@ function buildPotPickers() {
         <span class="pot-multiplier" style="margin-left:8px; font-size:11px; color:var(--muted)">Win=${data.win}pt · Draw=${data.draw}pt</span>
       </div>
       <div class="team-grid">`;
-    for (const team of data.teams) {
+    for (const team of shuffle(data.teams)) {
       html += `<button class="team-btn" id="tbtn-${pot}-${team.name.replace(/\s+/g,'_')}"
         onclick="selectTeam('${pot}','${team.name.replace(/'/g,"\\'")}')">
         <span class="team-flag">${team.flag}</span>
