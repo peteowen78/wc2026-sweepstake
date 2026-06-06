@@ -1183,7 +1183,7 @@ main {
     <!-- Score entry — Knockout -->
     <div class="card" style="margin-bottom:20px">
       <div class="card-title">Knockout Results</div>
-      <p style="font-size:12px; color:var(--muted); margin-bottom:16px">Add knockout matches as they're played.</p>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:16px">Add knockout matches as they're played. For penalty shootouts, check the winning team.</p>
       <div id="match-form">
         <div class="match-row">
           <input type="text" class="form-input match-team-input" id="match-team1" placeholder="Team 1" style="flex:1">
@@ -1191,6 +1191,14 @@ main {
           <span class="vs-label">vs</span>
           <input type="number" class="score-input" id="match-score2" placeholder="0" min="0" max="30">
           <input type="text" class="form-input match-team-input" id="match-team2" placeholder="Team 2" style="flex:1; text-align:right">
+        </div>
+        <div style="margin-top:12px; display:flex; gap:16px; flex-wrap:wrap; font-size:12px">
+          <label style="color:var(--muted)">
+            <input type="checkbox" id="match-team1-penalties" style="margin-right:4px"> Team 1 won on penalties
+          </label>
+          <label style="color:var(--muted)">
+            <input type="checkbox" id="match-team2-penalties" style="margin-right:4px"> Team 2 won on penalties
+          </label>
         </div>
         <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center">
           <select class="round-select" id="match-round" style="padding:6px 10px; font-size:13px">
@@ -1645,8 +1653,18 @@ function calcTeamPoints(teamName) {
       // Knockout matches: win/draw points too
       const myScore = isT1 ? s1 : s2;
       const oppScore = isT1 ? s2 : s1;
-      if (myScore > oppScore) pts += potData.win;
-      else if (myScore === oppScore) pts += potData.draw;
+
+      // Check if this team won on penalties
+      const wonOnPenalties = match.penaltyWinner === teamName;
+
+      if (wonOnPenalties) {
+        pts += potData.win; // Win points for penalty shootout winner
+      } else if (myScore > oppScore) {
+        pts += potData.win;
+      } else if (myScore === oppScore && !match.penaltyWinner) {
+        pts += potData.draw;
+      }
+
       if (myScore >= 3) pts += 1;
     }
   }
@@ -1921,17 +1939,24 @@ async function addMatch() {
   const score1 = parseInt(document.getElementById('match-score1').value) || 0;
   const score2 = parseInt(document.getElementById('match-score2').value) || 0;
   const round = document.getElementById('match-round').value;
+  const team1PenaltyWin = document.getElementById('match-team1-penalties').checked;
+  const team2PenaltyWin = document.getElementById('match-team2-penalties').checked;
 
   if (!team1 || !team2) return toast('Enter both team names', 'error');
   if (!TEAM_POT[team1]) return toast(`"${team1}" not found in pots`, 'error');
   if (!TEAM_POT[team2]) return toast(`"${team2}" not found in pots`, 'error');
 
-  const match = { team1, team2, score1, score2, round, addedAt: Date.now() };
+  // Validation: can't both win on penalties, and only if score is a draw
+  if (team1PenaltyWin && team2PenaltyWin) return toast('Only one team can win on penalties', 'error');
+  if ((team1PenaltyWin || team2PenaltyWin) && score1 !== score2) return toast('Penalty shootout only applies when fulltime score is a draw', 'error');
+
+  const match = { team1, team2, score1, score2, round, addedAt: Date.now(), penaltyWinner: team1PenaltyWin ? team1 : team2PenaltyWin ? team2 : null };
 
   const ref = dbRef('matches');
   if (ref) {
     await ref.push(match);
-    toast(`${team1} ${score1}–${score2} ${team2} saved`, 'success');
+    const penaltyNote = team1PenaltyWin ? ` (${team1} won on penalties)` : team2PenaltyWin ? ` (${team2} won on penalties)` : '';
+    toast(`${team1} ${score1}–${score2} ${team2}${penaltyNote} saved`, 'success');
   } else {
     state.matches['local_' + Date.now()] = match;
     toast('Match saved (offline)', 'success');
@@ -1941,6 +1966,8 @@ async function addMatch() {
   document.getElementById('match-team2').value = '';
   document.getElementById('match-score1').value = '';
   document.getElementById('match-score2').value = '';
+  document.getElementById('match-team1-penalties').checked = false;
+  document.getElementById('match-team2-penalties').checked = false;
   renderMatchLog();
 }
 
@@ -1952,11 +1979,12 @@ function renderMatchLog() {
 
   let html = '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Recent results</div>';
   for (const [id, m] of matches.slice(0, 20)) {
+    const penaltyNote = m.penaltyWinner ? ` <span style="font-size:10px;color:#EAA7C7">(${m.penaltyWinner} won on pens)</span>` : '';
     html += `<div class="match-row">
       <span class="match-team">${esc(m.team1)}</span>
       <span style="font-family:'Bebas Neue'; font-size:20px; color:var(--gold)">${m.score1}–${m.score2}</span>
       <span class="match-team right">${esc(m.team2)}</span>
-      <span style="font-size:11px;color:var(--muted);margin-left:8px">${roundLabel[m.round]||m.round}</span>
+      <span style="font-size:11px;color:var(--muted);margin-left:8px">${roundLabel[m.round]||m.round}${penaltyNote}</span>
       <button class="btn-danger" onclick="deleteMatch('${id}')">✕</button>
     </div>`;
   }
