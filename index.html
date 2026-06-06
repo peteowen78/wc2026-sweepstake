@@ -76,6 +76,61 @@ header {
   height: 64px;
 }
 
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  nav {
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s;
+  }
+
+  nav.open {
+    max-height: 300px;
+    padding: 8px 0;
+  }
+
+  .tab-btn {
+    border-radius: 0;
+    padding: 12px 20px;
+    text-align: left;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+
+  .logo-year {
+    display: none;
+  }
+
+  .logo-text {
+    font-size: 20px;
+  }
+
+  .logo {
+    gap: 6px;
+  }
+}
+
 .logo {
   display: flex;
   align-items: baseline;
@@ -867,19 +922,60 @@ main {
         <div class="logo-year">World Cup 2026</div>
       </div>
     </div>
-    <nav>
-      <button class="tab-btn active" onclick="showView('leaderboard')">Leaderboard</button>
-      <button class="tab-btn" onclick="showView('enter')">Enter</button>
-      <button class="tab-btn" onclick="showView('rules')">Rules</button>
-      <button class="tab-btn" onclick="showView('admin')">Admin</button>
+    <button class="menu-toggle" id="menu-toggle" onclick="toggleMenu()">☰</button>
+    <nav id="nav-menu">
+      <button class="tab-btn active" onclick="showView('home'); closeMenu()">Home</button>
+      <button class="tab-btn" onclick="showView('leaderboard'); closeMenu()">Leaderboard</button>
+      <button class="tab-btn" onclick="showView('enter'); closeMenu()">Enter</button>
+      <button class="tab-btn" onclick="showView('rules'); closeMenu()">Rules</button>
+      <button class="tab-btn" onclick="showView('admin'); closeMenu()">Admin</button>
     </nav>
   </div>
 </header>
 
 <main>
 
+<!-- ── Home/Intro View ──────────────────────────────────────────────────── -->
+<div id="view-home" class="view active">
+  <div style="max-width: 600px; margin: 60px auto 0;">
+    <div style="text-align: center; margin-bottom: 40px;">
+      <div style="font-size: 60px; margin-bottom: 16px;">🏆</div>
+      <div class="section-title" style="font-size: 42px;">World Cup 2026<br>Sweepstake</div>
+    </div>
+
+    <div style="background: linear-gradient(135deg, #1a2010 0%, #1a1500 100%); border: 1px solid rgba(245,200,66,0.25); border-radius: var(--radius); padding: 32px; margin-bottom: 24px;">
+      <div style="font-size: 18px; line-height: 1.8; color: var(--text);">
+        <p style="margin-bottom: 16px;">Pick <strong>one team from each of 5 pots</strong> based on World Cup odds — from favourites to underdogs. The riskier your picks, the bigger the rewards.</p>
+
+        <p style="margin-bottom: 16px;">As the tournament unfolds, your teams earn points for:</p>
+        <ul style="margin-left: 20px; margin-bottom: 16px; color: var(--muted);">
+          <li>Wins & draws (higher-value in weaker pots)</li>
+          <li>Scoring 3+ goals in a match</li>
+        </ul>
+
+        <p style="margin-bottom: 16px;">The player with the most points at the end wins <span style="color: var(--gold); font-weight: 700;">50% of the pot</span>. 2nd & 3rd place split 30% & 20%.</p>
+
+        <div style="background: rgba(0,0,0,0.3); padding: 12px 16px; border-radius: 8px; margin-top: 20px; border-left: 3px solid var(--gold);">
+          <strong>Entry fee:</strong> £2 each<br>
+          <strong>Pay to:</strong> Pete or Howard<br>
+          <strong>Multiple entries:</strong> Allowed (pick different team combinations)
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary" style="width: 100%; justify-content: center; font-size: 20px; padding: 16px" onclick="showView('enter'); closeMenu()">
+      Enter Now →
+    </button>
+
+    <div style="text-align: center; margin-top: 20px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <button class="btn-secondary" onclick="showView('leaderboard'); closeMenu()">View Leaderboard</button>
+      <button class="btn-secondary" onclick="showView('rules'); closeMenu()">Full Rules</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Leaderboard View ──────────────────────────────────────────────────── -->
-<div id="view-leaderboard" class="view active">
+<div id="view-leaderboard" class="view">
 
   <div class="prize-banner">
     <div>
@@ -944,7 +1040,7 @@ main {
   </button>
 
   <p style="font-size:12px; color:var(--muted); margin-top:12px">
-    Pay your entry fee to the organiser. Your entry is live immediately.
+    Pay your entry fee to Pete or Howard. Your entry is live immediately.
   </p>
 </div>
 
@@ -1464,10 +1560,20 @@ function showView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
-  event.target.classList.add('active');
+  if (event && event.target) event.target.classList.add('active');
 
   if (name === 'leaderboard') renderLeaderboard();
   if (name === 'admin' && adminUnlocked) renderAdminPanel();
+}
+
+function toggleMenu() {
+  const nav = document.getElementById('nav-menu');
+  nav.classList.toggle('open');
+}
+
+function closeMenu() {
+  const nav = document.getElementById('nav-menu');
+  nav.classList.remove('open');
 }
 
 // ════════════════════════════════════════════════════════════════════════════
