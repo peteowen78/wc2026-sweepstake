@@ -1820,10 +1820,28 @@ function updateEntryForm() {
 
 document.getElementById('entry-name').addEventListener('input', updateEntryForm);
 
+function isDuplicateEntry(newTeams) {
+  // Check if this exact team combination already exists
+  for (const entry of Object.values(state.entries)) {
+    if (!entry.teams) continue;
+    const sameTeams = Object.keys(newTeams).every(pot =>
+      entry.teams[pot] === newTeams[pot]
+    );
+    if (sameTeams) return true;
+  }
+  return false;
+}
+
 async function submitEntry() {
   const name = document.getElementById('entry-name').value.trim();
   if (!name) return toast('Please enter your name', 'error');
   if (!Object.values(selected).every(Boolean)) return toast('Please pick a team from every pot', 'error');
+
+  // Check for duplicate team combination
+  if (isDuplicateEntry(selected)) {
+    toast('⚠️ This team combination already exists! Pick different teams.', 'error');
+    return;
+  }
 
   const entry = {
     name,
