@@ -806,8 +806,8 @@ main {
 }
 .fixture-delete-btn:hover { color: var(--red); }
 
-/* ── Today's games widget ────────────────────────────────────────────────── */
-.todays-games {
+/* ── Next matches widget ────────────────────────────────────────────────── */
+.next-matches {
   background: linear-gradient(135deg, #1a2010 0%, #1a1500 100%);
   border: 1px solid rgba(34,197,94,0.25);
   border-radius: var(--radius);
@@ -815,7 +815,7 @@ main {
   margin-bottom: 28px;
 }
 
-.todays-games-title {
+.next-matches-title {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 18px;
   color: var(--green);
@@ -825,40 +825,46 @@ main {
   gap: 8px;
 }
 
-.todays-game-row {
+.next-match-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 0;
+  padding: 12px 0;
   border-bottom: 1px solid rgba(34,197,94,0.15);
   font-size: 13px;
 }
 
-.todays-game-row:last-child { border-bottom: none; }
+.next-match-row:last-child { border-bottom: none; }
 
-.todays-game-match {
+.next-match-content {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex: 1;
 }
 
-.todays-game-team {
+.next-match-datetime {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 90px;
+}
+
+.next-match-teams {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.next-match-team {
   display: flex;
   align-items: center;
   gap: 6px;
-  min-width: 120px;
 }
 
-.todays-game-time {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
-  text-align: right;
-  min-width: 60px;
-}
-
-.todays-games-empty {
+.next-matches-empty {
   color: var(--muted);
   font-size: 13px;
   text-align: center;
@@ -1002,7 +1008,7 @@ main {
     </div>
   </div>
 
-  <div id="todays-games-widget"></div>
+  <div id="next-matches-widget"></div>
 
   <div id="leaderboard-content">
     <div class="loading-spinner">Loading leaderboard…</div>
@@ -1333,26 +1339,116 @@ for (const [pot, data] of Object.entries(POTS)) {
 
 const KNOCKOUT_BONUS = { r32: 3, qf: 5, sf: 8, final_runner: 12, final_winner: 20 };
 
-// All 72 group stage fixtures with dates
+// All 72 group stage fixtures with dates and GMT times
 const FIXTURE_DATES = {
-  '2026-06-11': [['Mexico','South Africa']],
-  '2026-06-12': [['South Korea','Czech Republic'],['Canada','Bosnia & Herz.']],
-  '2026-06-13': [['USA','Paraguay'],['Qatar','Switzerland'],['Brazil','Morocco']],
-  '2026-06-14': [['Haiti','Scotland'],['Australia','Turkey'],['Germany','Curacao'],['Netherlands','Japan']],
-  '2026-06-15': [['Ivory Coast','Ecuador'],['Sweden','Tunisia'],['Spain','Cape Verde'],['Belgium','Egypt'],['Saudi Arabia','Uruguay']],
-  '2026-06-16': [['Iran','New Zealand'],['France','Senegal'],['Iraq','Norway']],
-  '2026-06-17': [['Argentina','Algeria'],['Austria','Jordan'],['Portugal','DR Congo'],['England','Croatia']],
-  '2026-06-18': [['Ghana','Panama'],['Uzbekistan','Colombia'],['Czech Republic','South Africa'],['Switzerland','Bosnia & Herz.'],['Canada','Qatar']],
-  '2026-06-19': [['Mexico','South Korea'],['USA','Australia'],['Scotland','Morocco']],
-  '2026-06-20': [['Brazil','Haiti'],['Turkey','Paraguay'],['Netherlands','Sweden'],['Germany','Ivory Coast']],
-  '2026-06-21': [['Ecuador','Curacao'],['Tunisia','Japan'],['Spain','Saudi Arabia'],['Belgium','Iran'],['Uruguay','Cape Verde']],
-  '2026-06-22': [['New Zealand','Egypt'],['Argentina','Austria'],['France','Iraq']],
-  '2026-06-23': [['Norway','Senegal'],['Jordan','Algeria'],['Portugal','Uzbekistan'],['England','Ghana']],
-  '2026-06-24': [['Panama','Croatia'],['Colombia','DR Congo'],['Switzerland','Canada'],['Bosnia & Herz.','Qatar'],['Morocco','Haiti'],['Scotland','Brazil']],
-  '2026-06-25': [['South Africa','South Korea'],['Czech Republic','Mexico'],['Curacao','Ivory Coast'],['Ecuador','Germany']],
-  '2026-06-26': [['Tunisia','Netherlands'],['Japan','Sweden'],['Turkey','USA'],['Paraguay','Australia'],['Norway','France'],['Senegal','Iraq']],
-  '2026-06-27': [['Cape Verde','Saudi Arabia'],['Uruguay','Spain'],['New Zealand','Belgium'],['Egypt','Iran'],['Panama','England'],['Croatia','Ghana']],
-  '2026-06-28': [['Colombia','Portugal'],['DR Congo','Uzbekistan'],['Algeria','Austria'],['Jordan','Argentina']],
+  '2026-06-11': [
+    {teams:['Mexico','South Africa'], time:'20:00'}
+  ],
+  '2026-06-12': [
+    {teams:['South Korea','Czech Republic'], time:'08:00'},
+    {teams:['Canada','Bosnia & Herz.'], time:'13:00'}
+  ],
+  '2026-06-13': [
+    {teams:['USA','Paraguay'], time:'07:00'},
+    {teams:['Qatar','Switzerland'], time:'13:00'},
+    {teams:['Brazil','Morocco'], time:'16:00'}
+  ],
+  '2026-06-14': [
+    {teams:['Haiti','Scotland'], time:'07:00'},
+    {teams:['Australia','Turkey'], time:'10:00'},
+    {teams:['Germany','Curacao'], time:'11:00'},
+    {teams:['Netherlands','Japan'], time:'14:00'}
+  ],
+  '2026-06-15': [
+    {teams:['Ivory Coast','Ecuador'], time:'05:00'},
+    {teams:['Sweden','Tunisia'], time:'08:00'},
+    {teams:['Spain','Cape Verde'], time:'10:00'},
+    {teams:['Belgium','Egypt'], time:'13:00'},
+    {teams:['Saudi Arabia','Uruguay'], time:'16:00'}
+  ],
+  '2026-06-16': [
+    {teams:['Iran','New Zealand'], time:'07:00'},
+    {teams:['France','Senegal'], time:'13:00'},
+    {teams:['Iraq','Norway'], time:'16:00'}
+  ],
+  '2026-06-17': [
+    {teams:['Argentina','Algeria'], time:'07:00'},
+    {teams:['Austria','Jordan'], time:'10:00'},
+    {teams:['Portugal','DR Congo'], time:'11:00'},
+    {teams:['England','Croatia'], time:'14:00'}
+  ],
+  '2026-06-18': [
+    {teams:['Ghana','Panama'], time:'05:00'},
+    {teams:['Uzbekistan','Colombia'], time:'08:00'},
+    {teams:['Czech Republic','South Africa'], time:'10:00'},
+    {teams:['Switzerland','Bosnia & Herz.'], time:'13:00'},
+    {teams:['Canada','Qatar'], time:'16:00'}
+  ],
+  '2026-06-19': [
+    {teams:['Mexico','South Korea'], time:'07:00'},
+    {teams:['USA','Australia'], time:'13:00'},
+    {teams:['Scotland','Morocco'], time:'16:00'}
+  ],
+  '2026-06-20': [
+    {teams:['Brazil','Haiti'], time:'06:30'},
+    {teams:['Turkey','Paraguay'], time:'09:00'},
+    {teams:['Netherlands','Sweden'], time:'11:00'},
+    {teams:['Germany','Ivory Coast'], time:'14:00'}
+  ],
+  '2026-06-21': [
+    {teams:['Ecuador','Curacao'], time:'06:00'},
+    {teams:['Tunisia','Japan'], time:'10:00'},
+    {teams:['Spain','Saudi Arabia'], time:'10:00'},
+    {teams:['Belgium','Iran'], time:'13:00'},
+    {teams:['Uruguay','Cape Verde'], time:'16:00'}
+  ],
+  '2026-06-22': [
+    {teams:['New Zealand','Egypt'], time:'07:00'},
+    {teams:['Argentina','Austria'], time:'11:00'},
+    {teams:['France','Iraq'], time:'15:00'}
+  ],
+  '2026-06-23': [
+    {teams:['Norway','Senegal'], time:'06:00'},
+    {teams:['Jordan','Algeria'], time:'09:00'},
+    {teams:['Portugal','Uzbekistan'], time:'11:00'},
+    {teams:['England','Ghana'], time:'14:00'}
+  ],
+  '2026-06-24': [
+    {teams:['Panama','Croatia'], time:'05:00'},
+    {teams:['Colombia','DR Congo'], time:'08:00'},
+    {teams:['Switzerland','Canada'], time:'13:00'},
+    {teams:['Bosnia & Herz.','Qatar'], time:'13:00'},
+    {teams:['Morocco','Haiti'], time:'16:00'},
+    {teams:['Scotland','Brazil'], time:'16:00'}
+  ],
+  '2026-06-25': [
+    {teams:['South Africa','South Korea'], time:'07:00'},
+    {teams:['Czech Republic','Mexico'], time:'07:00'},
+    {teams:['Curacao','Ivory Coast'], time:'14:00'},
+    {teams:['Ecuador','Germany'], time:'14:00'}
+  ],
+  '2026-06-26': [
+    {teams:['Tunisia','Netherlands'], time:'05:00'},
+    {teams:['Japan','Sweden'], time:'05:00'},
+    {teams:['Turkey','USA'], time:'08:00'},
+    {teams:['Paraguay','Australia'], time:'08:00'},
+    {teams:['Norway','France'], time:'13:00'},
+    {teams:['Senegal','Iraq'], time:'13:00'}
+  ],
+  '2026-06-27': [
+    {teams:['Cape Verde','Saudi Arabia'], time:'06:00'},
+    {teams:['Uruguay','Spain'], time:'06:00'},
+    {teams:['New Zealand','Belgium'], time:'09:00'},
+    {teams:['Egypt','Iran'], time:'09:00'},
+    {teams:['Panama','England'], time:'15:00'},
+    {teams:['Croatia','Ghana'], time:'15:00'}
+  ],
+  '2026-06-28': [
+    {teams:['Colombia','Portugal'], time:'05:30'},
+    {teams:['DR Congo','Uzbekistan'], time:'05:30'},
+    {teams:['Algeria','Austria'], time:'08:00'},
+    {teams:['Jordan','Argentina'], time:'08:00'}
+  ],
 };
 
 // All 72 group stage fixtures by group
@@ -1593,7 +1689,7 @@ function renderLeaderboard() {
   document.getElementById('prize-2nd').textContent = '£' + (pot * 0.3).toFixed(0);
   document.getElementById('prize-3rd').textContent = '£' + (pot * 0.2).toFixed(0);
 
-  renderTodaysGames();
+  renderNextMatches();
 
   if (!entries.length) {
     document.getElementById('leaderboard-content').innerHTML = `
@@ -1939,11 +2035,11 @@ function fixtureId(team1, team2) {
 function renderGroupTabs() {
   const tabs = document.getElementById('group-tabs');
   tabs.innerHTML = Object.keys(GROUP_FIXTURES).map(g => {
-    const done = GROUP_FIXTURES[g].matches.filter(([t1,t2]) => state.matches[fixtureId(t1,t2)]).length;
     const total = GROUP_FIXTURES[g].matches.length;
+    const done = GROUP_FIXTURES[g].matches.filter(([t1,t2]) => state.matches[fixtureId(t1,t2)]).length;
     const allDone = done === total;
     return `<button class="round-tab ${g===activeGroupTab?'active':''}" onclick="switchGroupTab('${g}')">
-      Grp ${g} ${allDone ? '✓' : done > 0 ? `(${done}/${total})` : ''}
+      Grp ${g} ${allDone && done > 0 ? '✓' : done > 0 ? `(${done}/${total})` : ''}
     </button>`;
   }).join('');
 }
@@ -2012,7 +2108,7 @@ async function saveFixture(team1, team2, fid) {
   renderGroupFixtures();
   renderDateTabs();
   renderDateFixtures();
-  renderTodaysGames();
+  renderNextMatches();
   toast(`${team1} ${s1}–${s2} ${team2} saved ✓`, 'success');
 }
 
@@ -2029,9 +2125,12 @@ function renderDateTabs() {
   const dates = Object.keys(FIXTURE_DATES).sort();
   const tabs = document.getElementById('date-tabs');
   tabs.innerHTML = dates.map(d => {
-    const matches = FIXTURE_DATES[d];
-    const done = matches.filter(([t1,t2]) => state.matches[fixtureId(t1,t2)]).length;
-    const total = matches.length;
+    const fixtures = FIXTURE_DATES[d];
+    const total = fixtures.length;
+    const done = fixtures.filter(f => {
+      const [t1, t2] = f.teams;
+      return state.matches[fixtureId(t1, t2)];
+    }).length;
     const dateObj = new Date(d);
     const shortDate = dateObj.toLocaleDateString('en-GB', {month:'short', day:'numeric'});
     return `<button class="round-tab ${d===activeDateTab?'active':''}" onclick="switchDateTab('${d}')">
@@ -2056,7 +2155,8 @@ function renderDateFixtures() {
   }
 
   let html = '';
-  fixtures.forEach(([t1, t2], i) => {
+  fixtures.forEach(fixture => {
+    const [t1, t2] = fixture.teams;
     const fid = fixtureId(t1, t2);
     const saved = state.matches[fid];
     const f1 = POTS[TEAM_POT[t1]]?.teams.find(t=>t.name===t1);
@@ -2092,40 +2192,60 @@ function renderDateFixtures() {
   container.innerHTML = html;
 }
 
-function renderTodaysGames() {
-  // Get today's date in YYYY-MM-DD format
+function renderNextMatches() {
+  // Get today's date
   const today = new Date();
-  // Use tournament start date for demo if before tournament
   const tournamentStart = new Date('2026-06-11');
   const checkDate = today >= tournamentStart ? today : tournamentStart;
+  checkDate.setHours(0, 0, 0, 0);
 
-  const dateStr = checkDate.toISOString().split('T')[0];
-  const todaysMatches = FIXTURE_DATES[dateStr] || [];
+  // Collect all upcoming matches
+  const allDates = Object.keys(FIXTURE_DATES).sort();
+  const upcomingMatches = [];
 
-  const widget = document.getElementById('todays-games-widget');
+  for (const dateStr of allDates) {
+    const matchDate = new Date(dateStr);
+    if (matchDate >= checkDate) {
+      const fixtures = FIXTURE_DATES[dateStr] || [];
+      for (const fixture of fixtures) {
+        upcomingMatches.push({ date: dateStr, ...fixture });
+      }
+    }
+    if (upcomingMatches.length >= 4) break;
+  }
 
-  if (!todaysMatches.length) {
-    widget.innerHTML = '';
+  const widget = document.getElementById('next-matches-widget');
+
+  if (!upcomingMatches.length) {
+    widget.innerHTML = `<div class="next-matches"><div class="next-matches-empty">Tournament matches coming soon...</div></div>`;
     return;
   }
 
-  let html = `<div class="todays-games">
-    <div class="todays-games-title">⚽ Today's Matches</div>`;
+  let html = `<div class="next-matches">
+    <div class="next-matches-title">⚽ Next Matches</div>`;
 
-  for (const [t1, t2] of todaysMatches) {
+  upcomingMatches.slice(0, 4).forEach(match => {
+    const [t1, t2] = match.teams;
     const f1 = POTS[TEAM_POT[t1]]?.teams.find(t=>t.name===t1);
     const f2 = POTS[TEAM_POT[t2]]?.teams.find(t=>t.name===t2);
-    const saved = state.matches[fixtureId(t1, t2)];
 
-    html += `<div class="todays-game-row">
-      <div class="todays-game-match">
-        <div class="todays-game-team">${f1?.flag||''} ${t1}</div>
-        <span style="color:var(--muted)">vs</span>
-        <div class="todays-game-team">${f2?.flag||''} ${t2}</div>
+    // Format date and time
+    const matchDate = new Date(match.date);
+    const dayName = matchDate.toLocaleDateString('en-GB', {weekday:'short'});
+    const dateNum = matchDate.toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+    const timeStr = match.time; // Already in GMT
+
+    html += `<div class="next-match-row">
+      <div class="next-match-content">
+        <div class="next-match-datetime">${dayName} ${dateNum}<br>${timeStr} GMT</div>
+        <div class="next-match-teams">
+          <div class="next-match-team">${f1?.flag||''} ${t1}</div>
+          <span style="color:var(--muted);font-weight:700">vs</span>
+          <div class="next-match-team">${f2?.flag||''} ${t2}</div>
+        </div>
       </div>
-      ${saved ? `<div class="todays-game-score" style="font-weight:700;color:var(--gold);font-family:'Bebas Neue';font-size:16px">${saved.score1}–${saved.score2}</div>` : '<div style="color:var(--muted);font-size:12px">Not started</div>'}
     </div>`;
-  }
+  });
 
   html += '</div>';
   widget.innerHTML = html;
