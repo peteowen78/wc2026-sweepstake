@@ -12,22 +12,22 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:        #0a0e1a;
-  --surface:   #111827;
-  --card:      #1a2235;
-  --border:    #1e2d45;
-  --gold:      #f5c842;
-  --gold-dim:  #b89a2a;
-  --green:     #22c55e;
-  --red:       #ef4444;
-  --blue:      #3b82f6;
-  --text:      #f0f4ff;
-  --muted:     #6b7fa8;
-  --pot-a:     #f5c842;
-  --pot-b:     #60a5fa;
-  --pot-c:     #34d399;
-  --pot-d:     #f97316;
-  --pot-e:     #c084fc;
+  --bg:        #1D1D1B;
+  --surface:   #2a2a27;
+  --card:      #32302d;
+  --border:    #4a4844;
+  --gold:      #ED773C;
+  --gold-dim:  #c85a1f;
+  --green:     #9ED6DF;
+  --red:       #C63F3E;
+  --blue:      #808BC5;
+  --text:      #EAE4DA;
+  --muted:     #8b8680;
+  --pot-a:     #EAC119;
+  --pot-b:     #808BC5;
+  --pot-c:     #9ED6DF;
+  --pot-d:     #ED773C;
+  --pot-e:     #EAA7C7;
   --radius:    12px;
   --entry-fee: 2;
 }
@@ -50,8 +50,8 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(245,200,66,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 60% at 80% 80%, rgba(59,130,246,0.05) 0%, transparent 60%);
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(237,119,60,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 80% 80%, rgba(128,139,197,0.03) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
@@ -189,8 +189,8 @@ main {
 
 /* ── Prize banner ────────────────────────────────────────────────────────── */
 .prize-banner {
-  background: linear-gradient(135deg, #1a1500 0%, #1a2010 100%);
-  border: 1px solid rgba(245,200,66,0.25);
+  background: linear-gradient(135deg, #2a2420 0%, #1f2425 100%);
+  border: 1px solid rgba(237,119,60,0.2);
   border-radius: var(--radius);
   padding: 20px 24px;
   margin-bottom: 28px;
@@ -222,9 +222,9 @@ main {
   line-height: 1;
 }
 
-.prize-place:nth-child(1) .prize-place-amount { color: #f5c842; }
-.prize-place:nth-child(2) .prize-place-amount { color: #94a3b8; }
-.prize-place:nth-child(3) .prize-place-amount { color: #cd7c32; }
+.prize-place:nth-child(1) .prize-place-amount { color: #EAC119; }
+.prize-place:nth-child(2) .prize-place-amount { color: #9ED6DF; }
+.prize-place:nth-child(3) .prize-place-amount { color: #ED773C; }
 
 .prize-place-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
 
@@ -808,8 +808,8 @@ main {
 
 /* ── Next matches widget ────────────────────────────────────────────────── */
 .next-matches {
-  background: linear-gradient(135deg, #1a2010 0%, #1a1500 100%);
-  border: 1px solid rgba(34,197,94,0.25);
+  background: linear-gradient(135deg, #2a2824 0%, #1f2420 100%);
+  border: 1px solid rgba(158,214,223,0.2);
   border-radius: var(--radius);
   padding: 20px 24px;
   margin-bottom: 28px;
@@ -818,7 +818,7 @@ main {
 .next-matches-title {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 18px;
-  color: var(--green);
+  color: #EAA7C7;
   margin-bottom: 12px;
   display: flex;
   align-items: center;
@@ -830,7 +830,7 @@ main {
   align-items: center;
   justify-content: space-between;
   padding: 12px 0;
-  border-bottom: 1px solid rgba(34,197,94,0.15);
+  border-bottom: 1px solid rgba(158,214,223,0.15);
   font-size: 13px;
 }
 
