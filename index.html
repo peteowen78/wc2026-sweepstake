@@ -977,7 +977,7 @@ main {
 
     <div class="rule-card">
       <div class="rule-card-title">💰 Prize Pot</div>
-      <div class="rule-item"><span class="rule-item-label">Entry fee</span><span class="rule-item-value">£<span id="fee-display-rules">5</span></span></div>
+      <div class="rule-item"><span class="rule-item-label">Entry fee</span><span class="rule-item-value">£<span id="fee-display-rules">2</span></span></div>
       <div class="rule-item"><span class="rule-item-label">🥇 1st place</span><span class="rule-item-value">50%</span></div>
       <div class="rule-item"><span class="rule-item-label">🥈 2nd place</span><span class="rule-item-value">30%</span></div>
       <div class="rule-item"><span class="rule-item-label">🥉 3rd place</span><span class="rule-item-value">20%</span></div>
@@ -1524,7 +1524,8 @@ function renderLeaderboard() {
     const teamTags = Object.entries(e.teams || {}).map(([pot, team]) => {
       const potTeam = POTS[pot]?.teams.find(t => t.name === team);
       const flag = potTeam?.flag || '🏳';
-      return `<span class="pot-tag ${pot}">${flag} ${team}</span>`;
+      const teamPts = calcTeamPoints(team);
+      return `<span class="pot-tag ${pot}" title="${teamPts} points">${flag} ${team} <span style="font-weight:700;color:inherit;opacity:0.8">${teamPts}</span></span>`;
     }).join('');
 
     html += `<tr class="lb-row ${topClass} ${unpaidClass}">
