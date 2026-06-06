@@ -1451,10 +1451,20 @@ const FIXTURE_DATES = {
   ],
 };
 
+// Shuffle function
+function shuffle(arr) {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 // All 72 group stage fixtures by group
 const GROUP_FIXTURES = {
   A: {
-    teams: ['Mexico','South Korea','Czech Republic','South Africa'],
+    teams: shuffle(['Mexico','South Korea','Czech Republic','South Africa']),
     matches: [
       ['Mexico','South Africa'],
       ['South Korea','Czech Republic'],
@@ -1465,7 +1475,7 @@ const GROUP_FIXTURES = {
     ]
   },
   B: {
-    teams: ['Canada','Bosnia & Herz.','Qatar','Switzerland'],
+    teams: shuffle(['Canada','Bosnia & Herz.','Qatar','Switzerland']),
     matches: [
       ['Canada','Bosnia & Herz.'],
       ['Qatar','Switzerland'],
@@ -1476,7 +1486,7 @@ const GROUP_FIXTURES = {
     ]
   },
   C: {
-    teams: ['Brazil','Morocco','Haiti','Scotland'],
+    teams: shuffle(['Brazil','Morocco','Haiti','Scotland']),
     matches: [
       ['Brazil','Morocco'],
       ['Haiti','Scotland'],
@@ -1487,7 +1497,7 @@ const GROUP_FIXTURES = {
     ]
   },
   D: {
-    teams: ['USA','Paraguay','Australia','Turkey'],
+    teams: shuffle(['USA','Paraguay','Australia','Turkey']),
     matches: [
       ['USA','Paraguay'],
       ['Australia','Turkey'],
@@ -1498,7 +1508,7 @@ const GROUP_FIXTURES = {
     ]
   },
   E: {
-    teams: ['Germany','Curacao','Ivory Coast','Ecuador'],
+    teams: shuffle(['Germany','Curacao','Ivory Coast','Ecuador']),
     matches: [
       ['Germany','Curacao'],
       ['Ivory Coast','Ecuador'],
@@ -1509,7 +1519,7 @@ const GROUP_FIXTURES = {
     ]
   },
   F: {
-    teams: ['Netherlands','Japan','Sweden','Tunisia'],
+    teams: shuffle(['Netherlands','Japan','Sweden','Tunisia']),
     matches: [
       ['Netherlands','Japan'],
       ['Sweden','Tunisia'],
@@ -1520,7 +1530,7 @@ const GROUP_FIXTURES = {
     ]
   },
   G: {
-    teams: ['Belgium','Egypt','Iran','New Zealand'],
+    teams: shuffle(['Belgium','Egypt','Iran','New Zealand']),
     matches: [
       ['Belgium','Egypt'],
       ['Iran','New Zealand'],
@@ -1531,7 +1541,7 @@ const GROUP_FIXTURES = {
     ]
   },
   H: {
-    teams: ['Spain','Cape Verde','Saudi Arabia','Uruguay'],
+    teams: shuffle(['Spain','Cape Verde','Saudi Arabia','Uruguay']),
     matches: [
       ['Spain','Cape Verde'],
       ['Saudi Arabia','Uruguay'],
@@ -1542,7 +1552,7 @@ const GROUP_FIXTURES = {
     ]
   },
   I: {
-    teams: ['France','Senegal','Iraq','Norway'],
+    teams: shuffle(['France','Senegal','Iraq','Norway']),
     matches: [
       ['France','Senegal'],
       ['Iraq','Norway'],
@@ -1553,7 +1563,7 @@ const GROUP_FIXTURES = {
     ]
   },
   J: {
-    teams: ['Argentina','Algeria','Austria','Jordan'],
+    teams: shuffle(['Argentina','Algeria','Austria','Jordan']),
     matches: [
       ['Argentina','Algeria'],
       ['Austria','Jordan'],
@@ -1564,7 +1574,7 @@ const GROUP_FIXTURES = {
     ]
   },
   K: {
-    teams: ['Portugal','DR Congo','Uzbekistan','Colombia'],
+    teams: shuffle(['Portugal','DR Congo','Uzbekistan','Colombia']),
     matches: [
       ['Portugal','DR Congo'],
       ['Uzbekistan','Colombia'],
@@ -1575,7 +1585,7 @@ const GROUP_FIXTURES = {
     ]
   },
   L: {
-    teams: ['England','Croatia','Ghana','Panama'],
+    teams: shuffle(['England','Croatia','Ghana','Panama']),
     matches: [
       ['England','Croatia'],
       ['Ghana','Panama'],
