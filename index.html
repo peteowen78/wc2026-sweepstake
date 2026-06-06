@@ -1685,6 +1685,7 @@ function showView(name) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   if (event && event.target) event.target.classList.add('active');
+  window.scrollTo(0, 0);
 
   if (name === 'leaderboard') renderLeaderboard();
   if (name === 'admin' && adminUnlocked) renderAdminPanel();
