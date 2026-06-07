@@ -2066,7 +2066,10 @@ function renderAdminEntries() {
     html += `<div class="admin-entry-row">
       <span class="paid-badge ${e.paid?'yes':'no'}">${e.paid?'PAID':'UNPAID'}</span>
       <div style="flex:1">
-        <div style="font-weight:600;font-size:14px">${esc(e.name)}</div>
+        <div style="font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px">
+          <span>${esc(e.name)}</span>
+          <button class="btn-secondary" style="font-size:10px;padding:2px 6px" onclick="renameEntry('${id}','${esc(e.name).replace(/'/g,"\\'")}')">✎ rename</button>
+        </div>
         <div style="font-size:11px;color:var(--muted)">${teamStr}</div>
       </div>
       <div style="font-family:'Bebas Neue';font-size:20px;color:var(--gold)">${pts}pts</div>
@@ -2075,6 +2078,18 @@ function renderAdminEntries() {
     </div>`;
   }
   document.getElementById('admin-entries-list').innerHTML = html;
+}
+
+async function renameEntry(id, currentName) {
+  const newName = prompt('Edit entry name:', currentName);
+  if (newName === null) return;
+  const trimmed = newName.trim();
+  if (!trimmed || trimmed === currentName) return;
+  state.entries[id].name = trimmed;
+  const ref = dbRef('entries/' + id + '/name');
+  if (ref) await ref.set(trimmed);
+  renderAdminEntries();
+  toast('Entry renamed', 'success');
 }
 
 async function togglePaid(id, wasPaid) {
