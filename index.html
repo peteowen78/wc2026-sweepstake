@@ -454,6 +454,8 @@ main {
 .team-btn.selected {
   background: rgba(245,200,66,0.1);
   color: var(--gold);
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
   position: relative;
 }
 
@@ -1807,6 +1809,12 @@ function buildPotPickers() {
 }
 
 function selectTeam(pot, teamName) {
+  const name = document.getElementById('entry-name').value.trim();
+  if (!name) {
+    toast('Please enter your name first', 'error');
+    document.getElementById('entry-name').focus();
+    return;
+  }
   // Deselect previous in this pot
   if (selected[pot]) {
     const prev = document.getElementById('tbtn-' + pot + '-' + selected[pot].replace(/\s+/g,'_'));
