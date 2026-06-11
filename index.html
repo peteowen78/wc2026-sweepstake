@@ -2220,6 +2220,8 @@ function renderNextMatches() {
     if (matchDate >= checkDate) {
       const fixtures = FIXTURE_DATES[dateStr] || [];
       for (const fixture of fixtures) {
+        const [t1, t2] = fixture.teams;
+        if (state.matches[fixtureId(t1, t2)]) continue; // already played
         upcomingMatches.push({ date: dateStr, ...fixture });
       }
     }
