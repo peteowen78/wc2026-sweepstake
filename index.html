@@ -2265,6 +2265,18 @@ function renderNextMatches() {
   widget.innerHTML = html;
 }
 
+function findFixtureDateTime(t1, t2) {
+  for (const dateStr of Object.keys(FIXTURE_DATES)) {
+    for (const fixture of FIXTURE_DATES[dateStr]) {
+      const [a, b] = fixture.teams;
+      if ((a === t1 && b === t2) || (a === t2 && b === t1)) {
+        return { date: dateStr, time: fixture.time };
+      }
+    }
+  }
+  return null;
+}
+
 function renderRecentMatches() {
   const widget = document.getElementById('recent-matches-widget');
   const matches = Object.values(state.matches || {})
@@ -2287,15 +2299,27 @@ function renderRecentMatches() {
     const f2 = POTS[TEAM_POT[t2]]?.teams.find(t=>t.name===t2);
     const penaltyNote = match.penaltyWinner ? ` <span style="font-size:10px;color:#EAA7C7">(${esc(match.penaltyWinner)} won on pens)</span>` : '';
 
+    const fixtureInfo = findFixtureDateTime(t1, t2);
+    let dateTimeHtml;
+    if (fixtureInfo) {
+      const matchDate = new Date(fixtureInfo.date);
+      const dayName = matchDate.toLocaleDateString('en-GB', {weekday:'short'});
+      const dateNum = matchDate.toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+      dateTimeHtml = `${dayName} ${dateNum}<br>${fixtureInfo.time} GMT`;
+    } else {
+      dateTimeHtml = roundLabel[match.round] || match.round;
+    }
+
     html += `<div class="next-match-row">
       <div class="next-match-content">
-        <div class="next-match-datetime">${roundLabel[match.round]||match.round}${penaltyNote}</div>
+        <div class="next-match-datetime">${dateTimeHtml}</div>
         <div class="next-match-teams">
           <div class="next-match-team">${f1?.flag||''} ${t1}</div>
           <span style="color:var(--gold);font-weight:700;font-family:'Bebas Neue';font-size:18px">${match.score1}–${match.score2}</span>
           <div class="next-match-team">${f2?.flag||''} ${t2}</div>
         </div>
       </div>
+      ${penaltyNote}
     </div>`;
   });
 
