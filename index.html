@@ -2094,7 +2094,8 @@ async function deleteEntry(id) {
 }
 
 function fixtureId(team1, team2) {
-  return 'fixture_' + team1.replace(/\s+/g,'_') + '_vs_' + team2.replace(/\s+/g,'_');
+  const clean = s => s.replace(/[\s.#$\[\]\/&]+/g, '_').replace(/_+$/, '');
+  return 'fixture_' + clean(team1) + '_vs_' + clean(team2);
 }
 
 function renderGroupTabs() {
