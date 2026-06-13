@@ -2334,8 +2334,13 @@ function findFixtureDateTime(t1, t2) {
 
 function renderRecentMatches() {
   const widget = document.getElementById('recent-matches-widget');
+  const matchTimestamp = m => {
+    const fixtureInfo = findFixtureDateTime(m.team1, m.team2);
+    if (fixtureInfo) return new Date(`${fixtureInfo.date}T${fixtureInfo.time}:00Z`).getTime();
+    return m.addedAt || 0;
+  };
   const matches = Object.values(state.matches || {})
-    .sort((a, b) => (b.addedAt||0) - (a.addedAt||0))
+    .sort((a, b) => matchTimestamp(b) - matchTimestamp(a))
     .slice(0, 4);
 
   if (!matches.length) {
