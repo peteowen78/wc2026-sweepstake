@@ -390,6 +390,15 @@ main {
 
 .form-input:focus { border-color: var(--gold); }
 
+.team-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.team-filter-bar .form-label { margin-bottom: 0; white-space: nowrap; }
+.team-filter-bar .form-input { width: auto; flex: 0 1 260px; padding: 10px 12px; font-size: 14px; }
+
 /* ── Pot picker ──────────────────────────────────────────────────────────── */
 .pot-section {
   margin-bottom: 24px;
@@ -972,6 +981,13 @@ main {
   <div id="next-matches-widget"></div>
 
   <div id="recent-matches-widget"></div>
+
+  <div class="team-filter-bar">
+    <label class="form-label" for="team-filter" style="margin-bottom:0">Filter by team</label>
+    <select class="form-input" id="team-filter" onchange="onTeamFilterChange()">
+      <option value="">All players</option>
+    </select>
+  </div>
 
   <div id="leaderboard-content">
     <div class="loading-spinner">Loading leaderboard…</div>
@@ -1639,7 +1655,31 @@ function closeMenu() {
 // ════════════════════════════════════════════════════════════════════════════
 // LEADERBOARD
 // ════════════════════════════════════════════════════════════════════════════
+let teamFilter = '';
+
+function populateTeamFilter() {
+  const select = document.getElementById('team-filter');
+  if (select.options.length > 1) return; // already populated
+
+  const allTeams = Object.values(POTS)
+    .flatMap(data => data.teams)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  for (const team of allTeams) {
+    const opt = document.createElement('option');
+    opt.value = team.name;
+    opt.textContent = `${team.flag} ${team.name}`;
+    select.appendChild(opt);
+  }
+}
+
+function onTeamFilterChange() {
+  teamFilter = document.getElementById('team-filter').value;
+  renderLeaderboard();
+}
+
 function renderLeaderboard() {
+  populateTeamFilter();
   const entries = Object.values(state.entries);
   const fee = parseFloat(state.settings.entryFee) || 2;
   const pot = entries.length * fee;
@@ -1676,6 +1716,19 @@ function renderLeaderboard() {
     return null;
   }
 
+  const visible = ranked
+    .map((e, i) => ({ ...e, rank: i }))
+    .filter(e => !teamFilter || Object.values(e.teams || {}).includes(teamFilter));
+
+  if (teamFilter && !visible.length) {
+    document.getElementById('leaderboard-content').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">⚽</div>
+        <div class="empty-state-text">No one picked ${esc(teamFilter)}.</div>
+      </div>`;
+    return;
+  }
+
   let html = `<table class="leaderboard-table">
     <thead><tr>
       <th style="width:40px">#</th>
@@ -1683,7 +1736,8 @@ function renderLeaderboard() {
       <th>Points</th>
     </tr></thead><tbody>`;
 
-  ranked.forEach((e, i) => {
+  visible.forEach(e => {
+    const i = e.rank;
     const topClass = i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : '';
     const unpaidClass = !e.paid ? 'unpaid' : '';
     const prize = prizeForRank(i);
