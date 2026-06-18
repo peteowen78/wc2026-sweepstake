@@ -390,6 +390,47 @@ main {
 
 .form-input:focus { border-color: var(--gold); }
 
+.pts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  min-width: 600px;
+}
+.pts-table th {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 6px 8px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.pts-table th:first-child { text-align: left; }
+.pts-table td {
+  padding: 6px 8px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text);
+}
+.pts-table td:first-child { text-align: left; font-weight: 600; }
+.pts-table tr:hover td { background: rgba(255,255,255,0.03); }
+.pts-table .pts-group-header td {
+  background: rgba(255,255,255,0.04);
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-bottom: none;
+}
+.pts-table .pts-zero { color: var(--muted); }
+.pts-table .pts-pos { color: var(--gold); font-weight: 700; }
+.pts-table .pts-total { font-weight: 700; color: var(--text); border-left: 1px solid var(--border); }
+.pts-table .pts-dash { color: rgba(255,255,255,0.15); }
+
 .team-filter-bar {
   display: flex;
   align-items: center;
@@ -1164,6 +1205,13 @@ main {
         </div>
       </div>
       <div id="match-log" style="margin-top:16px"></div>
+    </div>
+
+    <!-- Team points breakdown -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">Points by Round</div>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:16px">Points earned by each team per matchday and knockout round.</p>
+      <div id="team-points-table" style="overflow-x:auto"></div>
     </div>
 
     <!-- Entries list -->
@@ -2388,6 +2436,111 @@ function renderRecentMatches() {
   widget.innerHTML = html;
 }
 
+function buildMatchdayLookup() {
+  // Returns { teamName: { md1: fid, md2: fid, md3: fid } }
+  const lookup = {};
+  for (const group of Object.values(GROUP_FIXTURES)) {
+    // matches[0,1]=MD1, [2,3]=MD2, [4,5]=MD3
+    const days = [[0,1],[2,3],[4,5]];
+    days.forEach(([a, b], di) => {
+      const key = ['md1','md2','md3'][di];
+      for (const idx of [a, b]) {
+        const [t1, t2] = group.matches[idx];
+        const fid = fixtureId(t1, t2);
+        if (!lookup[t1]) lookup[t1] = {};
+        if (!lookup[t2]) lookup[t2] = {};
+        lookup[t1][key] = fid;
+        lookup[t2][key] = fid;
+      }
+    });
+  }
+  return lookup;
+}
+
+function calcMatchPts(teamName, match) {
+  if (!match) return null;
+  const pot = TEAM_POT[teamName];
+  if (!pot) return null;
+  const potData = POTS[pot];
+  const isT1 = match.team1 === teamName;
+  const isT2 = match.team2 === teamName;
+  if (!isT1 && !isT2) return null;
+  const s1 = parseInt(match.score1) || 0;
+  const s2 = parseInt(match.score2) || 0;
+  const myScore = isT1 ? s1 : s2;
+  const oppScore = isT1 ? s2 : s1;
+  let pts = 0;
+  if (match.round === 'group') {
+    if (myScore > oppScore) pts += potData.win;
+    else if (myScore === oppScore) pts += potData.draw;
+    if (myScore >= 3) pts += 1;
+  } else {
+    const wonOnPens = match.penaltyWinner === teamName;
+    if (wonOnPens || myScore > oppScore) pts += potData.win;
+    else if (myScore === oppScore && !match.penaltyWinner) pts += potData.draw;
+    if (myScore >= 3) pts += 1;
+  }
+  return pts;
+}
+
+function renderTeamPointsTable() {
+  const mdLookup = buildMatchdayLookup();
+  const koRounds = ['r32', 'qf', 'sf', 'final'];
+  const koLabel  = { r32:'R32', qf:'QF', sf:'SF', final:'Final' };
+
+  // Pre-index KO matches by team
+  const koByTeam = {};
+  for (const match of Object.values(state.matches)) {
+    if (match.round === 'group') continue;
+    for (const t of [match.team1, match.team2]) {
+      if (!koByTeam[t]) koByTeam[t] = {};
+      koByTeam[t][match.round] = match;
+    }
+  }
+
+  function cell(pts) {
+    if (pts === null) return `<td class="pts-dash">—</td>`;
+    if (pts === 0)    return `<td class="pts-zero">0</td>`;
+    return `<td class="pts-pos">${pts}</td>`;
+  }
+
+  let html = `<table class="pts-table">
+    <thead><tr>
+      <th>Team</th>
+      <th>Pot</th>
+      <th>MD1</th><th>MD2</th><th>MD3</th>
+      <th>R32</th><th>QF</th><th>SF</th><th>Final</th>
+      <th class="pts-total">Total</th>
+    </tr></thead><tbody>`;
+
+  const potOrder = ['A','B','C','D','E'];
+  for (const potKey of potOrder) {
+    const teams = POTS[potKey].teams.slice().sort((a,b) => a.name.localeCompare(b.name));
+    html += `<tr class="pts-group-header"><td colspan="10">${POTS[potKey].label} — Pot ${potKey}</td></tr>`;
+    for (const team of teams) {
+      const tl = mdLookup[team.name] || {};
+      const md1pts = calcMatchPts(team.name, state.matches[tl.md1]);
+      const md2pts = calcMatchPts(team.name, state.matches[tl.md2]);
+      const md3pts = calcMatchPts(team.name, state.matches[tl.md3]);
+      const r32pts  = calcMatchPts(team.name, koByTeam[team.name]?.r32);
+      const qfpts   = calcMatchPts(team.name, koByTeam[team.name]?.qf);
+      const sfpts   = calcMatchPts(team.name, koByTeam[team.name]?.sf);
+      const finpts  = calcMatchPts(team.name, koByTeam[team.name]?.final);
+      const total   = calcTeamPoints(team.name);
+      html += `<tr>
+        <td>${team.flag} ${team.name}</td>
+        <td class="pts-dash">${potKey}</td>
+        ${cell(md1pts)}${cell(md2pts)}${cell(md3pts)}
+        ${cell(r32pts)}${cell(qfpts)}${cell(sfpts)}${cell(finpts)}
+        <td class="pts-total">${total || 0}</td>
+      </tr>`;
+    }
+  }
+
+  html += '</tbody></table>';
+  document.getElementById('team-points-table').innerHTML = html;
+}
+
 function renderAdminPanel() {
   document.getElementById('admin-fee').value = state.settings.entryFee || 2;
   renderGroupTabs();
@@ -2395,6 +2548,7 @@ function renderAdminPanel() {
   renderDateTabs();
   renderDateFixtures();
   renderMatchLog();
+  renderTeamPointsTable();
   renderAdminEntries();
 }
 
@@ -2412,7 +2566,7 @@ function initFirebaseListeners() {
 
   dbRef('matches').on('value', snap => {
     state.matches = snap.val() || {};
-    if (adminUnlocked) { renderGroupTabs(); renderGroupFixtures(); renderDateTabs(); renderDateFixtures(); renderMatchLog(); }
+    if (adminUnlocked) { renderGroupTabs(); renderGroupFixtures(); renderDateTabs(); renderDateFixtures(); renderMatchLog(); renderTeamPointsTable(); }
     if (document.getElementById('view-leaderboard').classList.contains('active')) { renderLeaderboard(); renderTodaysGames(); }
   });
 
