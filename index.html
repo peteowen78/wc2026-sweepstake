@@ -435,10 +435,11 @@ main {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
   margin-bottom: 16px;
 }
 .team-filter-bar .form-label { margin-bottom: 0; white-space: nowrap; }
-.team-filter-bar .form-input { width: auto; flex: 0 1 260px; padding: 10px 12px; font-size: 14px; }
+.team-filter-bar .form-input { width: auto; flex: 0 1 220px; padding: 10px 12px; font-size: 14px; }
 
 /* ── Pot picker ──────────────────────────────────────────────────────────── */
 .pot-section {
@@ -1024,6 +1025,8 @@ main {
   <div id="recent-matches-widget"></div>
 
   <div class="team-filter-bar">
+    <label class="form-label" for="name-filter" style="margin-bottom:0">Search player</label>
+    <input type="text" class="form-input" id="name-filter" placeholder="e.g. Pete" oninput="onNameFilterChange()">
     <label class="form-label" for="team-filter" style="margin-bottom:0">Filter by team</label>
     <select class="form-input" id="team-filter" onchange="onTeamFilterChange()">
       <option value="">All players</option>
@@ -1705,6 +1708,12 @@ function closeMenu() {
 // LEADERBOARD
 // ════════════════════════════════════════════════════════════════════════════
 let teamFilter = '';
+let nameFilter = '';
+
+function onNameFilterChange() {
+  nameFilter = document.getElementById('name-filter').value.trim().toLowerCase();
+  renderLeaderboard();
+}
 
 function populateTeamFilter() {
   const select = document.getElementById('team-filter');
@@ -1767,13 +1776,19 @@ function renderLeaderboard() {
 
   const visible = ranked
     .map((e, i) => ({ ...e, rank: i }))
-    .filter(e => !teamFilter || Object.values(e.teams || {}).includes(teamFilter));
+    .filter(e => !teamFilter || Object.values(e.teams || {}).includes(teamFilter))
+    .filter(e => !nameFilter || (e.name || '').toLowerCase().includes(nameFilter));
 
-  if (teamFilter && !visible.length) {
+  if ((teamFilter || nameFilter) && !visible.length) {
+    const reason = teamFilter && nameFilter
+      ? `No one named "${esc(document.getElementById('name-filter').value.trim())}" picked ${esc(teamFilter)}.`
+      : teamFilter
+        ? `No one picked ${esc(teamFilter)}.`
+        : `No player found matching "${esc(document.getElementById('name-filter').value.trim())}".`;
     document.getElementById('leaderboard-content').innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">⚽</div>
-        <div class="empty-state-text">No one picked ${esc(teamFilter)}.</div>
+        <div class="empty-state-text">${reason}</div>
       </div>`;
     return;
   }
