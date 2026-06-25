@@ -1200,6 +1200,7 @@ main {
         <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center">
           <select class="round-select" id="match-round" style="padding:6px 10px; font-size:13px">
             <option value="r32">Round of 32</option>
+            <option value="r16">Round of 16</option>
             <option value="qf">Quarter-final</option>
             <option value="sf">Semi-final</option>
             <option value="final">Final</option>
@@ -1208,6 +1209,13 @@ main {
         </div>
       </div>
       <div id="match-log" style="margin-top:16px"></div>
+    </div>
+
+    <!-- Knockout schedule reference -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">Knockout Schedule</div>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:16px">Official kickoff dates &amp; times (UK time) so you know when to come back and add each result. Bracket matchups aren't known until the group stage finishes.</p>
+      <div id="knockout-schedule"></div>
     </div>
 
     <!-- Team points breakdown -->
@@ -1462,6 +1470,50 @@ const FIXTURE_DATES = {
   ],
 };
 
+// Official FIFA World Cup 2026 knockout schedule (UK local time).
+// Teams are unknown until the bracket fills in, so this is keyed by match
+// number/round rather than team names — used purely for the admin's
+// reference schedule (when to expect each result).
+const KNOCKOUT_FIXTURES = [
+  { round:'r32', match:73, date:'2026-06-28', time:'20:00', venue:'SoFi Stadium', city:'Inglewood' },
+  { round:'r32', match:76, date:'2026-06-29', time:'18:00', venue:'NRG Stadium', city:'Houston' },
+  { round:'r32', match:74, date:'2026-06-29', time:'21:30', venue:'Gillette Stadium', city:'Foxborough' },
+  { round:'r32', match:75, date:'2026-06-30', time:'02:00', venue:'Estadio BBVA', city:'Guadalupe' },
+  { round:'r32', match:78, date:'2026-06-30', time:'18:00', venue:'AT&T Stadium', city:'Arlington' },
+  { round:'r32', match:77, date:'2026-06-30', time:'22:00', venue:'MetLife Stadium', city:'East Rutherford' },
+  { round:'r32', match:79, date:'2026-07-01', time:'02:00', venue:'Estadio Azteca', city:'Mexico City' },
+  { round:'r32', match:80, date:'2026-07-01', time:'17:00', venue:'Mercedes-Benz Stadium', city:'Atlanta' },
+  { round:'r32', match:82, date:'2026-07-01', time:'21:00', venue:'Lumen Field', city:'Seattle' },
+  { round:'r32', match:81, date:'2026-07-02', time:'01:00', venue:"Levi's Stadium", city:'Santa Clara' },
+  { round:'r32', match:84, date:'2026-07-02', time:'20:00', venue:'SoFi Stadium', city:'Inglewood' },
+  { round:'r32', match:83, date:'2026-07-03', time:'00:00', venue:'BMO Field', city:'Toronto' },
+  { round:'r32', match:85, date:'2026-07-03', time:'04:00', venue:'BC Place', city:'Vancouver' },
+  { round:'r32', match:88, date:'2026-07-03', time:'19:00', venue:'AT&T Stadium', city:'Arlington' },
+  { round:'r32', match:86, date:'2026-07-03', time:'23:00', venue:'Hard Rock Stadium', city:'Miami Gardens' },
+  { round:'r32', match:87, date:'2026-07-04', time:'02:30', venue:'Arrowhead Stadium', city:'Kansas City' },
+
+  { round:'r16', match:90, date:'2026-07-04', time:'18:00', venue:'NRG Stadium', city:'Houston' },
+  { round:'r16', match:89, date:'2026-07-04', time:'22:00', venue:'Lincoln Financial Field', city:'Philadelphia' },
+  { round:'r16', match:91, date:'2026-07-05', time:'21:00', venue:'MetLife Stadium', city:'East Rutherford' },
+  { round:'r16', match:92, date:'2026-07-06', time:'01:00', venue:'Estadio Azteca', city:'Mexico City' },
+  { round:'r16', match:93, date:'2026-07-06', time:'20:00', venue:'AT&T Stadium', city:'Arlington' },
+  { round:'r16', match:94, date:'2026-07-07', time:'01:00', venue:'Lumen Field', city:'Seattle' },
+  { round:'r16', match:95, date:'2026-07-07', time:'17:00', venue:'Mercedes-Benz Stadium', city:'Atlanta' },
+  { round:'r16', match:96, date:'2026-07-07', time:'21:00', venue:'BC Place', city:'Vancouver' },
+
+  { round:'qf', match:97, date:'2026-07-09', time:'21:00', venue:'Gillette Stadium', city:'Foxborough' },
+  { round:'qf', match:98, date:'2026-07-10', time:'20:00', venue:'SoFi Stadium', city:'Inglewood' },
+  { round:'qf', match:99, date:'2026-07-11', time:'22:00', venue:'Hard Rock Stadium', city:'Miami Gardens' },
+  { round:'qf', match:100, date:'2026-07-12', time:'02:00', venue:'Arrowhead Stadium', city:'Kansas City' },
+
+  { round:'sf', match:101, date:'2026-07-14', time:'20:00', venue:'AT&T Stadium', city:'Arlington' },
+  { round:'sf', match:102, date:'2026-07-15', time:'20:00', venue:'Mercedes-Benz Stadium', city:'Atlanta' },
+
+  { round:'third', match:103, date:'2026-07-18', time:'22:00', venue:'Hard Rock Stadium', city:'Miami Gardens' },
+
+  { round:'final', match:104, date:'2026-07-19', time:'20:00', venue:'MetLife Stadium', city:'East Rutherford' },
+];
+
 // Shuffle function
 function shuffle(arr) {
   const result = [...arr];
@@ -1611,7 +1663,7 @@ const GROUP_FIXTURES = {
 let activeGroupTab = 'A';
 let activeScoreView = 'group';
 let activeDateTab = '2026-06-11';
-const ROUND_ORDER = ['group','r32','qf','sf','final'];
+const ROUND_ORDER = ['group','r32','r16','qf','sf','final'];
 
 // ════════════════════════════════════════════════════════════════════════════
 // STATE
@@ -2033,7 +2085,7 @@ function renderMatchLog() {
   const matches = Object.entries(state.matches).sort((a,b) => (b[1].addedAt||0) - (a[1].addedAt||0));
   if (!matches.length) { document.getElementById('match-log').innerHTML = ''; return; }
 
-  const roundLabel = { group:'Group', r32:'R32', qf:'QF', sf:'SF', final:'Final' };
+  const roundLabel = { group:'Group', r32:'R32', r16:'R16', qf:'QF', sf:'SF', third:'3rd Place', final:'Final' };
 
   let html = '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Recent results</div>';
   for (const [id, m] of matches.slice(0, 20)) {
@@ -2062,6 +2114,7 @@ function renderTeamStatusGrid() {
   const roundOptions = [
     { value: 'group',  label: 'Group stage' },
     { value: 'r32',    label: 'Round of 32' },
+    { value: 'r16',    label: 'Round of 16' },
     { value: 'qf',     label: 'Quarter-final' },
     { value: 'sf',     label: 'Semi-final' },
     { value: 'runner', label: 'Runner-up' },
@@ -2415,7 +2468,7 @@ function renderRecentMatches() {
     return;
   }
 
-  const roundLabel = { group:'Group', r32:'R32', qf:'QF', sf:'SF', final:'Final' };
+  const roundLabel = { group:'Group', r32:'R32', r16:'R16', qf:'QF', sf:'SF', third:'3rd Place', final:'Final' };
 
   let html = `<div class="next-matches">
     <div class="next-matches-title">📋 Recent Results</div>`;
@@ -2503,8 +2556,8 @@ function calcMatchPts(teamName, match) {
 
 function renderTeamPointsTable() {
   const mdLookup = buildMatchdayLookup();
-  const koRounds = ['r32', 'qf', 'sf', 'final'];
-  const koLabel  = { r32:'R32', qf:'QF', sf:'SF', final:'Final' };
+  const koRounds = ['r32', 'r16', 'qf', 'sf', 'final'];
+  const koLabel  = { r32:'R32', r16:'R16', qf:'QF', sf:'SF', final:'Final' };
 
   // Pre-index KO matches by team
   const koByTeam = {};
@@ -2527,20 +2580,21 @@ function renderTeamPointsTable() {
       <th>Team</th>
       <th>Pot</th>
       <th>MD1</th><th>MD2</th><th>MD3</th>
-      <th>R32</th><th>QF</th><th>SF</th><th>Final</th>
+      <th>R32</th><th>R16</th><th>QF</th><th>SF</th><th>Final</th>
       <th class="pts-total">Total</th>
     </tr></thead><tbody>`;
 
   const potOrder = ['A','B','C','D','E'];
   for (const potKey of potOrder) {
     const teams = POTS[potKey].teams.slice().sort((a,b) => a.name.localeCompare(b.name));
-    html += `<tr class="pts-group-header"><td colspan="10">${POTS[potKey].label} — Pot ${potKey}</td></tr>`;
+    html += `<tr class="pts-group-header"><td colspan="11">${POTS[potKey].label} — Pot ${potKey}</td></tr>`;
     for (const team of teams) {
       const tl = mdLookup[team.name] || {};
       const md1pts = calcMatchPts(team.name, state.matches[tl.md1]);
       const md2pts = calcMatchPts(team.name, state.matches[tl.md2]);
       const md3pts = calcMatchPts(team.name, state.matches[tl.md3]);
       const r32pts  = calcMatchPts(team.name, koByTeam[team.name]?.r32);
+      const r16pts  = calcMatchPts(team.name, koByTeam[team.name]?.r16);
       const qfpts   = calcMatchPts(team.name, koByTeam[team.name]?.qf);
       const sfpts   = calcMatchPts(team.name, koByTeam[team.name]?.sf);
       const finpts  = calcMatchPts(team.name, koByTeam[team.name]?.final);
@@ -2549,7 +2603,7 @@ function renderTeamPointsTable() {
         <td>${team.flag} ${team.name}</td>
         <td class="pts-dash">${potKey}</td>
         ${cell(md1pts)}${cell(md2pts)}${cell(md3pts)}
-        ${cell(r32pts)}${cell(qfpts)}${cell(sfpts)}${cell(finpts)}
+        ${cell(r32pts)}${cell(r16pts)}${cell(qfpts)}${cell(sfpts)}${cell(finpts)}
         <td class="pts-total">${total || 0}</td>
       </tr>`;
     }
@@ -2559,6 +2613,28 @@ function renderTeamPointsTable() {
   document.getElementById('team-points-table').innerHTML = html;
 }
 
+function renderKnockoutSchedule() {
+  const roundLabel = { r32:'Round of 32', r16:'Round of 16', qf:'Quarter-final', sf:'Semi-final', third:'3rd Place', final:'Final' };
+
+  let html = '';
+  let lastRound = null;
+  for (const fx of KNOCKOUT_FIXTURES) {
+    if (fx.round !== lastRound) {
+      html += `<div style="font-size:11px;color:var(--muted);margin:14px 0 6px;text-transform:uppercase;letter-spacing:1px">${roundLabel[fx.round]}</div>`;
+      lastRound = fx.round;
+    }
+    const d = new Date(`${fx.date}T${fx.time}:00Z`);
+    const dayName = d.toLocaleDateString('en-GB', {weekday:'short'});
+    const dateNum = d.toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+    html += `<div class="match-row">
+      <span style="font-size:13px;color:var(--text);min-width:90px">${dayName} ${dateNum}</span>
+      <span style="font-family:'Bebas Neue'; font-size:18px; color:var(--gold)">${fx.time}</span>
+      <span style="font-size:12px;color:var(--muted);flex:1">${esc(fx.venue)}, ${esc(fx.city)}</span>
+    </div>`;
+  }
+  document.getElementById('knockout-schedule').innerHTML = html;
+}
+
 function renderAdminPanel() {
   document.getElementById('admin-fee').value = state.settings.entryFee || 2;
   renderGroupTabs();
@@ -2566,6 +2642,7 @@ function renderAdminPanel() {
   renderDateTabs();
   renderDateFixtures();
   renderMatchLog();
+  renderKnockoutSchedule();
   renderTeamPointsTable();
   renderAdminEntries();
 }
