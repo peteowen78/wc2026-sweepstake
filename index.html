@@ -1155,27 +1155,29 @@ main {
       </div>
     </div>
 
-    <!-- Score entry — View tabs -->
-    <div style="margin-bottom:16px; display:flex; gap:8px; border-bottom:1px solid var(--border); padding-bottom:12px">
-      <button class="tab-btn active" id="tab-group-view" onclick="switchScoreView('group')">By Group</button>
-      <button class="tab-btn" id="tab-date-view" onclick="switchScoreView('date')">By Date</button>
-    </div>
+    <!-- Group stage — collapsed now it's finished, still editable for corrections -->
+    <details class="card" style="margin-bottom:20px">
+      <summary class="card-title" style="cursor:pointer">Group Stage Results ✅ (complete — click to expand)</summary>
 
-    <!-- Group view -->
-    <div id="score-view-group" class="card" style="margin-bottom:20px">
-      <div class="card-title">Group Stage Results</div>
-      <p style="font-size:12px; color:var(--muted); margin-bottom:16px">Enter scores for each match. Saves automatically when you click Save.</p>
-      <div class="round-tabs" id="group-tabs"></div>
-      <div id="group-fixtures"></div>
-    </div>
+      <div style="margin:16px 0; display:flex; gap:8px; border-bottom:1px solid var(--border); padding-bottom:12px">
+        <button class="tab-btn active" id="tab-group-view" onclick="switchScoreView('group')">By Group</button>
+        <button class="tab-btn" id="tab-date-view" onclick="switchScoreView('date')">By Date</button>
+      </div>
 
-    <!-- Date view -->
-    <div id="score-view-date" class="card" style="margin-bottom:20px; display:none">
-      <div class="card-title">Group Stage Results (by Date)</div>
-      <p style="font-size:12px; color:var(--muted); margin-bottom:16px">Select a date to enter results for that day.</p>
-      <div class="round-tabs" id="date-tabs"></div>
-      <div id="date-fixtures"></div>
-    </div>
+      <!-- Group view -->
+      <div id="score-view-group">
+        <p style="font-size:12px; color:var(--muted); margin-bottom:16px">Enter scores for each match. Saves automatically when you click Save.</p>
+        <div class="round-tabs" id="group-tabs"></div>
+        <div id="group-fixtures"></div>
+      </div>
+
+      <!-- Date view -->
+      <div id="score-view-date" style="display:none">
+        <p style="font-size:12px; color:var(--muted); margin-bottom:16px">Select a date to enter results for that day.</p>
+        <div class="round-tabs" id="date-tabs"></div>
+        <div id="date-fixtures"></div>
+      </div>
+    </details>
 
     <!-- Knockout fixtures + results, combined -->
     <div class="card" style="margin-bottom:20px">
