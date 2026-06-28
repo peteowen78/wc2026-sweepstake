@@ -1471,47 +1471,49 @@ const FIXTURE_DATES = {
 };
 
 // Official FIFA World Cup 2026 knockout schedule (UK local time).
-// Teams are unknown until the bracket fills in, so this is keyed by match
-// number/round rather than team names — used purely for the admin's
-// reference schedule (when to expect each result).
+// Round of 32 matchups are now known (groups are settled), so team1/team2
+// are the real teams. Round of 16 onward shows which Round of 32 pairing
+// each slot belongs to (e.g. "Winner of South Africa-Canada") since the
+// actual teams aren't known until earlier rounds finish — feeds[] holds
+// the match numbers it depends on, used to follow the bracket through.
 const KNOCKOUT_FIXTURES = [
-  { round:'r32', match:73, date:'2026-06-28', time:'20:00', venue:'SoFi Stadium', city:'Inglewood' },
-  { round:'r32', match:76, date:'2026-06-29', time:'18:00', venue:'NRG Stadium', city:'Houston' },
-  { round:'r32', match:74, date:'2026-06-29', time:'21:30', venue:'Gillette Stadium', city:'Foxborough' },
-  { round:'r32', match:75, date:'2026-06-30', time:'02:00', venue:'Estadio BBVA', city:'Guadalupe' },
-  { round:'r32', match:78, date:'2026-06-30', time:'18:00', venue:'AT&T Stadium', city:'Arlington' },
-  { round:'r32', match:77, date:'2026-06-30', time:'22:00', venue:'MetLife Stadium', city:'East Rutherford' },
-  { round:'r32', match:79, date:'2026-07-01', time:'02:00', venue:'Estadio Azteca', city:'Mexico City' },
-  { round:'r32', match:80, date:'2026-07-01', time:'17:00', venue:'Mercedes-Benz Stadium', city:'Atlanta' },
-  { round:'r32', match:82, date:'2026-07-01', time:'21:00', venue:'Lumen Field', city:'Seattle' },
-  { round:'r32', match:81, date:'2026-07-02', time:'01:00', venue:"Levi's Stadium", city:'Santa Clara' },
-  { round:'r32', match:84, date:'2026-07-02', time:'20:00', venue:'SoFi Stadium', city:'Inglewood' },
-  { round:'r32', match:83, date:'2026-07-03', time:'00:00', venue:'BMO Field', city:'Toronto' },
-  { round:'r32', match:85, date:'2026-07-03', time:'04:00', venue:'BC Place', city:'Vancouver' },
-  { round:'r32', match:88, date:'2026-07-03', time:'19:00', venue:'AT&T Stadium', city:'Arlington' },
-  { round:'r32', match:86, date:'2026-07-03', time:'23:00', venue:'Hard Rock Stadium', city:'Miami Gardens' },
-  { round:'r32', match:87, date:'2026-07-04', time:'02:30', venue:'Arrowhead Stadium', city:'Kansas City' },
+  { round:'r32', match:73, date:'2026-06-28', time:'20:00', venue:'SoFi Stadium', city:'Inglewood', team1:'South Africa', team2:'Canada' },
+  { round:'r32', match:76, date:'2026-06-29', time:'18:00', venue:'NRG Stadium', city:'Houston', team1:'Brazil', team2:'Japan' },
+  { round:'r32', match:74, date:'2026-06-29', time:'21:30', venue:'Gillette Stadium', city:'Foxborough', team1:'Germany', team2:'Paraguay' },
+  { round:'r32', match:75, date:'2026-06-30', time:'02:00', venue:'Estadio BBVA', city:'Guadalupe', team1:'Netherlands', team2:'Morocco' },
+  { round:'r32', match:78, date:'2026-06-30', time:'18:00', venue:'AT&T Stadium', city:'Arlington', team1:'Ivory Coast', team2:'Norway' },
+  { round:'r32', match:77, date:'2026-06-30', time:'22:00', venue:'MetLife Stadium', city:'East Rutherford', team1:'France', team2:'Sweden' },
+  { round:'r32', match:79, date:'2026-07-01', time:'02:00', venue:'Estadio Azteca', city:'Mexico City', team1:'Mexico', team2:'Ecuador' },
+  { round:'r32', match:80, date:'2026-07-01', time:'17:00', venue:'Mercedes-Benz Stadium', city:'Atlanta', team1:'England', team2:'DR Congo' },
+  { round:'r32', match:82, date:'2026-07-01', time:'21:00', venue:'Lumen Field', city:'Seattle', team1:'Belgium', team2:'Senegal' },
+  { round:'r32', match:81, date:'2026-07-02', time:'01:00', venue:"Levi's Stadium", city:'Santa Clara', team1:'USA', team2:'Bosnia & Herz.' },
+  { round:'r32', match:84, date:'2026-07-02', time:'20:00', venue:'SoFi Stadium', city:'Inglewood', team1:'Spain', team2:'Austria' },
+  { round:'r32', match:83, date:'2026-07-03', time:'00:00', venue:'BMO Field', city:'Toronto', team1:'Portugal', team2:'Croatia' },
+  { round:'r32', match:85, date:'2026-07-03', time:'04:00', venue:'BC Place', city:'Vancouver', team1:'Switzerland', team2:'Algeria' },
+  { round:'r32', match:88, date:'2026-07-03', time:'19:00', venue:'AT&T Stadium', city:'Arlington', team1:'Australia', team2:'Egypt' },
+  { round:'r32', match:86, date:'2026-07-03', time:'23:00', venue:'Hard Rock Stadium', city:'Miami Gardens', team1:'Argentina', team2:'Cape Verde' },
+  { round:'r32', match:87, date:'2026-07-04', time:'02:30', venue:'Arrowhead Stadium', city:'Kansas City', team1:'Colombia', team2:'Ghana' },
 
-  { round:'r16', match:90, date:'2026-07-04', time:'18:00', venue:'NRG Stadium', city:'Houston' },
-  { round:'r16', match:89, date:'2026-07-04', time:'22:00', venue:'Lincoln Financial Field', city:'Philadelphia' },
-  { round:'r16', match:91, date:'2026-07-05', time:'21:00', venue:'MetLife Stadium', city:'East Rutherford' },
-  { round:'r16', match:92, date:'2026-07-06', time:'01:00', venue:'Estadio Azteca', city:'Mexico City' },
-  { round:'r16', match:93, date:'2026-07-06', time:'20:00', venue:'AT&T Stadium', city:'Arlington' },
-  { round:'r16', match:94, date:'2026-07-07', time:'01:00', venue:'Lumen Field', city:'Seattle' },
-  { round:'r16', match:95, date:'2026-07-07', time:'17:00', venue:'Mercedes-Benz Stadium', city:'Atlanta' },
-  { round:'r16', match:96, date:'2026-07-07', time:'21:00', venue:'BC Place', city:'Vancouver' },
+  { round:'r16', match:90, date:'2026-07-04', time:'18:00', venue:'NRG Stadium', city:'Houston', slot1:'Winner: South Africa-Canada', slot2:'Winner: Netherlands-Morocco', feeds:[73,75] },
+  { round:'r16', match:89, date:'2026-07-04', time:'22:00', venue:'Lincoln Financial Field', city:'Philadelphia', slot1:'Winner: Germany-Paraguay', slot2:'Winner: France-Sweden', feeds:[74,77] },
+  { round:'r16', match:91, date:'2026-07-05', time:'21:00', venue:'MetLife Stadium', city:'East Rutherford', slot1:'Winner: Brazil-Japan', slot2:'Winner: Ivory Coast-Norway', feeds:[76,78] },
+  { round:'r16', match:92, date:'2026-07-06', time:'01:00', venue:'Estadio Azteca', city:'Mexico City', slot1:'Winner: Mexico-Ecuador', slot2:'Winner: England-DR Congo', feeds:[79,80] },
+  { round:'r16', match:93, date:'2026-07-06', time:'20:00', venue:'AT&T Stadium', city:'Arlington', slot1:'Winner: Portugal-Croatia', slot2:'Winner: Spain-Austria', feeds:[83,84] },
+  { round:'r16', match:94, date:'2026-07-07', time:'01:00', venue:'Lumen Field', city:'Seattle', slot1:'Winner: USA-Bosnia & Herz.', slot2:'Winner: Belgium-Senegal', feeds:[81,82] },
+  { round:'r16', match:95, date:'2026-07-07', time:'17:00', venue:'Mercedes-Benz Stadium', city:'Atlanta', slot1:'Winner: Argentina-Cape Verde', slot2:'Winner: Australia-Egypt', feeds:[86,88] },
+  { round:'r16', match:96, date:'2026-07-07', time:'21:00', venue:'BC Place', city:'Vancouver', slot1:'Winner: Switzerland-Algeria', slot2:'Winner: Colombia-Ghana', feeds:[85,87] },
 
-  { round:'qf', match:97, date:'2026-07-09', time:'21:00', venue:'Gillette Stadium', city:'Foxborough' },
-  { round:'qf', match:98, date:'2026-07-10', time:'20:00', venue:'SoFi Stadium', city:'Inglewood' },
-  { round:'qf', match:99, date:'2026-07-11', time:'22:00', venue:'Hard Rock Stadium', city:'Miami Gardens' },
-  { round:'qf', match:100, date:'2026-07-12', time:'02:00', venue:'Arrowhead Stadium', city:'Kansas City' },
+  { round:'qf', match:97, date:'2026-07-09', time:'21:00', venue:'Gillette Stadium', city:'Foxborough', slot1:'Winner: R16 Match 89', slot2:'Winner: R16 Match 90', feeds:[89,90] },
+  { round:'qf', match:98, date:'2026-07-10', time:'20:00', venue:'SoFi Stadium', city:'Inglewood', slot1:'Winner: R16 Match 93', slot2:'Winner: R16 Match 94', feeds:[93,94] },
+  { round:'qf', match:99, date:'2026-07-11', time:'22:00', venue:'Hard Rock Stadium', city:'Miami Gardens', slot1:'Winner: R16 Match 91', slot2:'Winner: R16 Match 92', feeds:[91,92] },
+  { round:'qf', match:100, date:'2026-07-12', time:'02:00', venue:'Arrowhead Stadium', city:'Kansas City', slot1:'Winner: R16 Match 95', slot2:'Winner: R16 Match 96', feeds:[95,96] },
 
-  { round:'sf', match:101, date:'2026-07-14', time:'20:00', venue:'AT&T Stadium', city:'Arlington' },
-  { round:'sf', match:102, date:'2026-07-15', time:'20:00', venue:'Mercedes-Benz Stadium', city:'Atlanta' },
+  { round:'sf', match:101, date:'2026-07-14', time:'20:00', venue:'AT&T Stadium', city:'Arlington', slot1:'Winner: QF Match 97', slot2:'Winner: QF Match 98', feeds:[97,98] },
+  { round:'sf', match:102, date:'2026-07-15', time:'20:00', venue:'Mercedes-Benz Stadium', city:'Atlanta', slot1:'Winner: QF Match 99', slot2:'Winner: QF Match 100', feeds:[99,100] },
 
-  { round:'third', match:103, date:'2026-07-18', time:'22:00', venue:'Hard Rock Stadium', city:'Miami Gardens' },
+  { round:'third', match:103, date:'2026-07-18', time:'22:00', venue:'Hard Rock Stadium', city:'Miami Gardens', slot1:'Loser: SF Match 101', slot2:'Loser: SF Match 102', feeds:[101,102] },
 
-  { round:'final', match:104, date:'2026-07-19', time:'20:00', venue:'MetLife Stadium', city:'East Rutherford' },
+  { round:'final', match:104, date:'2026-07-19', time:'20:00', venue:'MetLife Stadium', city:'East Rutherford', slot1:'Winner: SF Match 101', slot2:'Winner: SF Match 102', feeds:[101,102] },
 ];
 
 // Shuffle function
@@ -2626,10 +2628,14 @@ function renderKnockoutSchedule() {
     const d = new Date(`${fx.date}T${fx.time}:00Z`);
     const dayName = d.toLocaleDateString('en-GB', {weekday:'short'});
     const dateNum = d.toLocaleDateString('en-GB', {day:'numeric', month:'short'});
-    html += `<div class="match-row">
+    const matchup = fx.team1
+      ? `${esc(fx.team1)} v ${esc(fx.team2)}`
+      : `${esc(fx.slot1)} v ${esc(fx.slot2)}`;
+    html += `<div class="match-row" style="flex-wrap:wrap">
       <span style="font-size:13px;color:var(--text);min-width:90px">${dayName} ${dateNum}</span>
       <span style="font-family:'Bebas Neue'; font-size:18px; color:var(--gold)">${fx.time}</span>
       <span style="font-size:12px;color:var(--muted);flex:1">${esc(fx.venue)}, ${esc(fx.city)}</span>
+      <span style="font-size:12px;color:var(--text);width:100%;margin-top:2px">${matchup}</span>
     </div>`;
   }
   document.getElementById('knockout-schedule').innerHTML = html;
