@@ -2381,6 +2381,13 @@ function renderDateFixtures() {
   container.innerHTML = html;
 }
 
+function knockoutFixturePlayed(fx) {
+  if (!fx.team1) return false; // bracket slot not yet decided — can't confirm played
+  return Object.values(state.matches).some(m =>
+    (m.team1 === fx.team1 && m.team2 === fx.team2) || (m.team1 === fx.team2 && m.team2 === fx.team1)
+  );
+}
+
 function renderNextMatches() {
   // Get today's date
   const today = new Date();
@@ -2388,22 +2395,34 @@ function renderNextMatches() {
   const checkDate = today >= tournamentStart ? today : tournamentStart;
   checkDate.setHours(0, 0, 0, 0);
 
-  // Collect all upcoming matches
-  const allDates = Object.keys(FIXTURE_DATES).sort();
-  const upcomingMatches = [];
-
-  for (const dateStr of allDates) {
-    const matchDate = new Date(dateStr);
-    if (matchDate >= checkDate) {
-      const fixtures = FIXTURE_DATES[dateStr] || [];
-      for (const fixture of fixtures) {
-        const [t1, t2] = fixture.teams;
-        if (state.matches[fixtureId(t1, t2)]) continue; // already played
-        upcomingMatches.push({ date: dateStr, ...fixture });
-      }
+  // Collect all upcoming group-stage matches
+  const candidates = [];
+  for (const [dateStr, fixtures] of Object.entries(FIXTURE_DATES)) {
+    for (const fixture of fixtures) {
+      const [t1, t2] = fixture.teams;
+      if (state.matches[fixtureId(t1, t2)]) continue; // already played
+      candidates.push({ date: dateStr, time: fixture.time, t1, t2, f1Label: t1, f2Label: t2 });
     }
-    if (upcomingMatches.length >= 4) break;
   }
+
+  // Collect all upcoming knockout matches
+  for (const fx of KNOCKOUT_FIXTURES) {
+    if (knockoutFixturePlayed(fx)) continue;
+    candidates.push({
+      date: fx.date,
+      time: fx.time,
+      t1: fx.team1 || null,
+      t2: fx.team2 || null,
+      f1Label: fx.team1 || fx.slot1,
+      f2Label: fx.team2 || fx.slot2,
+    });
+  }
+
+  const upcomingMatches = candidates
+    .map(c => ({ ...c, ts: new Date(`${c.date}T${c.time}:00Z`).getTime() }))
+    .filter(c => c.ts >= checkDate.getTime())
+    .sort((a, b) => a.ts - b.ts)
+    .slice(0, 4);
 
   const widget = document.getElementById('next-matches-widget');
 
@@ -2415,10 +2434,9 @@ function renderNextMatches() {
   let html = `<div class="next-matches">
     <div class="next-matches-title">⚽ Next Matches</div>`;
 
-  upcomingMatches.slice(0, 4).forEach(match => {
-    const [t1, t2] = match.teams;
-    const f1 = POTS[TEAM_POT[t1]]?.teams.find(t=>t.name===t1);
-    const f2 = POTS[TEAM_POT[t2]]?.teams.find(t=>t.name===t2);
+  upcomingMatches.forEach(match => {
+    const f1 = match.t1 ? POTS[TEAM_POT[match.t1]]?.teams.find(t=>t.name===match.t1) : null;
+    const f2 = match.t2 ? POTS[TEAM_POT[match.t2]]?.teams.find(t=>t.name===match.t2) : null;
 
     // Format date and time
     const matchDate = new Date(match.date);
@@ -2430,9 +2448,9 @@ function renderNextMatches() {
       <div class="next-match-content">
         <div class="next-match-datetime">${dayName} ${dateNum}<br>${timeStr} GMT</div>
         <div class="next-match-teams">
-          <div class="next-match-team">${f1?.flag||''} ${t1}</div>
+          <div class="next-match-team">${f1?.flag||''} ${esc(match.f1Label)}</div>
           <span style="color:var(--muted);font-weight:700">vs</span>
-          <div class="next-match-team">${f2?.flag||''} ${t2}</div>
+          <div class="next-match-team">${f2?.flag||''} ${esc(match.f2Label)}</div>
         </div>
       </div>
     </div>`;
