@@ -1514,8 +1514,6 @@ const KNOCKOUT_FIXTURES = [
   { round:'sf', match:101, date:'2026-07-14', time:'20:00', venue:'AT&T Stadium', city:'Arlington', slot1:'Winner: QF Match 97', slot2:'Winner: QF Match 98', feeds:[97,98] },
   { round:'sf', match:102, date:'2026-07-15', time:'20:00', venue:'Mercedes-Benz Stadium', city:'Atlanta', slot1:'Winner: QF Match 99', slot2:'Winner: QF Match 100', feeds:[99,100] },
 
-  { round:'third', match:103, date:'2026-07-18', time:'22:00', venue:'Hard Rock Stadium', city:'Miami Gardens', slot1:'Loser: SF Match 101', slot2:'Loser: SF Match 102', feeds:[101,102] },
-
   { round:'final', match:104, date:'2026-07-19', time:'20:00', venue:'MetLife Stadium', city:'East Rutherford', slot1:'Winner: SF Match 101', slot2:'Winner: SF Match 102', feeds:[101,102] },
 ];
 
@@ -2090,7 +2088,7 @@ function renderMatchLog() {
   const matches = Object.entries(state.matches).sort((a,b) => (b[1].addedAt||0) - (a[1].addedAt||0));
   if (!matches.length) { document.getElementById('match-log').innerHTML = ''; return; }
 
-  const roundLabel = { group:'Group', r32:'R32', r16:'R16', qf:'QF', sf:'SF', third:'3rd Place', final:'Final' };
+  const roundLabel = { group:'Group', r32:'R32', r16:'R16', qf:'QF', sf:'SF', final:'Final' };
 
   let html = '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Recent results</div>';
   for (const [id, m] of matches.slice(0, 20)) {
@@ -2492,7 +2490,7 @@ function renderRecentMatches() {
     return;
   }
 
-  const roundLabel = { group:'Group', r32:'R32', r16:'R16', qf:'QF', sf:'SF', third:'3rd Place', final:'Final' };
+  const roundLabel = { group:'Group', r32:'R32', r16:'R16', qf:'QF', sf:'SF', final:'Final' };
 
   let html = `<div class="next-matches">
     <div class="next-matches-title">📋 Recent Results</div>`;
@@ -2645,7 +2643,7 @@ function findMatchForFixture(fx) {
 }
 
 function renderKnockoutFixtures() {
-  const roundLabel = { r32:'Round of 32', r16:'Round of 16', qf:'Quarter-final', sf:'Semi-final', third:'3rd Place', final:'Final' };
+  const roundLabel = { r32:'Round of 32', r16:'Round of 16', qf:'Quarter-final', sf:'Semi-final', final:'Final' };
 
   let html = '';
   let lastRound = null;
