@@ -1735,11 +1735,23 @@ function calcEntryPoints(entry) {
   return Object.values(entry.teams || {}).reduce((sum, team) => sum + calcTeamPoints(team), 0);
 }
 
-// A team is knocked out if it lost any knockout match (r32 onward).
-// The loser is decided by the penalty-shootout winner if set, otherwise
-// by the fulltime score. A level score with no penalty winner recorded is
-// treated as undecided (not yet eliminated).
+// Teams that reached the Round of 32 (the bracket is fixed once groups end).
+// Any team NOT in this set didn't qualify and is therefore knocked out.
+const R32_TEAMS = new Set(
+  KNOCKOUT_FIXTURES
+    .filter(fx => fx.round === 'r32')
+    .flatMap(fx => [fx.team1, fx.team2])
+    .filter(Boolean)
+);
+
+// A team is knocked out if it (a) failed to qualify for the Round of 32, or
+// (b) lost a knockout match. The loser is decided by the penalty-shootout
+// winner if set, otherwise by the fulltime score. A level score with no
+// penalty winner recorded is treated as undecided (not yet eliminated).
 function isTeamEliminated(teamName) {
+  // Didn't make the last 32 (only judge this once the R32 bracket is known).
+  if (R32_TEAMS.size && !R32_TEAMS.has(teamName)) return true;
+
   for (const match of Object.values(state.matches)) {
     if (match.round === 'group') continue;
     const isT1 = match.team1 === teamName;
