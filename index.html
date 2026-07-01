@@ -1735,6 +1735,38 @@ function calcEntryPoints(entry) {
   return Object.values(entry.teams || {}).reduce((sum, team) => sum + calcTeamPoints(team), 0);
 }
 
+// A team is knocked out if it lost any knockout match (r32 onward).
+// The loser is decided by the penalty-shootout winner if set, otherwise
+// by the fulltime score. A level score with no penalty winner recorded is
+// treated as undecided (not yet eliminated).
+function isTeamEliminated(teamName) {
+  for (const match of Object.values(state.matches)) {
+    if (match.round === 'group') continue;
+    const isT1 = match.team1 === teamName;
+    const isT2 = match.team2 === teamName;
+    if (!isT1 && !isT2) continue;
+
+    const s1 = parseInt(match.score1) || 0;
+    const s2 = parseInt(match.score2) || 0;
+    const myScore = isT1 ? s1 : s2;
+    const oppScore = isT1 ? s2 : s1;
+
+    if (match.penaltyWinner) {
+      if (match.penaltyWinner !== teamName) return true;
+    } else if (myScore < oppScore) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Small red cross to flag a knocked-out team wherever its name is shown.
+function eliminationMark(teamName) {
+  return isTeamEliminated(teamName)
+    ? ` <span style="color:#e5484d;font-weight:700" title="Knocked out">✕</span>`
+    : '';
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // NAVIGATION
 // ════════════════════════════════════════════════════════════════════════════
@@ -1864,7 +1896,7 @@ function renderLeaderboard() {
       const potTeam = POTS[pot]?.teams.find(t => t.name === team);
       const flag = potTeam?.flag || '🏳';
       const teamPts = calcTeamPoints(team);
-      return `<span class="pot-tag ${pot}" title="${teamPts} points">${flag} ${team} <span style="font-weight:700;color:inherit;opacity:0.8">${teamPts}</span></span>`;
+      return `<span class="pot-tag ${pot}" title="${teamPts} points">${flag} ${team}${eliminationMark(team)} <span style="font-weight:700;color:inherit;opacity:0.8">${teamPts}</span></span>`;
     }).join('');
 
     html += `<tr class="lb-row ${topClass} ${unpaidClass}">
@@ -2166,7 +2198,7 @@ function renderAdminEntries() {
     const pts = calcEntryPoints(e);
     const teamStr = Object.entries(e.teams||{}).map(([pot,team])=>{
       const t = POTS[pot]?.teams.find(t=>t.name===team);
-      return `${t?.flag||''}${team}`;
+      return `${t?.flag||''}${team}${eliminationMark(team)}`;
     }).join(' · ');
 
     html += `<div class="admin-entry-row">
@@ -2622,7 +2654,7 @@ function renderTeamPointsTable() {
       const finpts  = calcMatchPts(team.name, koByTeam[team.name]?.final);
       const total   = calcTeamPoints(team.name);
       html += `<tr>
-        <td>${team.flag} ${team.name}</td>
+        <td>${team.flag} ${team.name}${eliminationMark(team.name)}</td>
         <td class="pts-dash">${potKey}</td>
         ${cell(md1pts)}${cell(md2pts)}${cell(md3pts)}
         ${cell(r32pts)}${cell(r16pts)}${cell(qfpts)}${cell(sfpts)}${cell(finpts)}
