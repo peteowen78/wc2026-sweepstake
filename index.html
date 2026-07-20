@@ -231,6 +231,56 @@ main {
 .entries-count { font-size: 13px; color: var(--muted); }
 .entries-count span { color: var(--text); font-weight: 600; }
 
+/* ── Podium (final standings) ────────────────────────────────────────────── */
+.podium-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 16px 0;
+  margin-bottom: 20px;
+  text-align: center;
+  overflow: hidden;
+}
+.podium-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  margin-bottom: 2px;
+}
+.podium-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+.podium-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.podium-col { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; }
+.podium-medal { font-size: 34px; line-height: 1; margin-bottom: 6px; }
+.podium-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 2px;
+  overflow-wrap: break-word;
+}
+.podium-pts { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--gold); line-height: 1.1; }
+.podium-prize { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+.podium-block {
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 30px;
+  color: rgba(0,0,0,0.55);
+}
+.podium-block.p1 { height: 110px; background: linear-gradient(180deg, #f5c842, #c89a1f); }
+.podium-block.p2 { height: 78px;  background: linear-gradient(180deg, #cfd2d6, #9aa0a8); }
+.podium-block.p3 { height: 56px;  background: linear-gradient(180deg, #d9955c, #a8642f); }
+
 /* ── Leaderboard ─────────────────────────────────────────────────────────── */
 .leaderboard-table {
   width: 100%;
@@ -1019,6 +1069,8 @@ main {
       </div>
     </div>
   </div>
+
+  <div id="podium-widget"></div>
 
   <div id="next-matches-widget"></div>
 
@@ -1873,6 +1925,33 @@ function renderLeaderboard() {
     return null;
   }
 
+  // Podium: only once the final has been played
+  const tournamentOver = Object.values(state.matches).some(m => m.round === 'final');
+  const podiumEl = document.getElementById('podium-widget');
+  if (tournamentOver && ranked.length >= 3) {
+    const [g, s, b] = ranked;
+    const col = (e, place, medal, share) => `
+      <div class="podium-col">
+        <div class="podium-medal">${medal}</div>
+        <div class="podium-name">${esc(e.name)}</div>
+        <div class="podium-pts">${e.pts} pts</div>
+        <div class="podium-prize">£${(pot * share).toFixed(0)}</div>
+        <div class="podium-block p${place}">${place}</div>
+      </div>`;
+    podiumEl.innerHTML = `
+      <div class="podium-card">
+        <div class="podium-title">🏆 Final Standings</div>
+        <div class="podium-sub">World Cup 2026 · that's a wrap!</div>
+        <div class="podium-row">
+          ${col(s, 2, '🥈', 0.3)}
+          ${col(g, 1, '🥇', 0.5)}
+          ${col(b, 3, '🥉', 0.2)}
+        </div>
+      </div>`;
+  } else {
+    podiumEl.innerHTML = '';
+  }
+
   const visible = ranked
     .map((e, i) => ({ ...e, rank: i }))
     .filter(e => !teamFilter || Object.values(e.teams || {}).includes(teamFilter))
@@ -2473,7 +2552,9 @@ function renderNextMatches() {
   const widget = document.getElementById('next-matches-widget');
 
   if (!upcomingMatches.length) {
-    widget.innerHTML = `<div class="next-matches"><div class="next-matches-empty">Tournament matches coming soon...</div></div>`;
+    // Tournament finished (final played) → no widget; otherwise "coming soon"
+    const finalPlayed = Object.values(state.matches).some(m => m.round === 'final');
+    widget.innerHTML = finalPlayed ? '' : `<div class="next-matches"><div class="next-matches-empty">Tournament matches coming soon...</div></div>`;
     return;
   }
 
